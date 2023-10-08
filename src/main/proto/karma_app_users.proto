@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package karmaappusers;
+
+option java_multiple_files = true;
+option java_package = "com.msik404.karmaappusers.grpc";
+option java_outer_classname = "KarmaAppUsersProtos";
+
+import "google/protobuf/empty.proto";
+import "buf/validate/validate.proto";
+
+service Users {
+
+  rpc createUser(CreateUserRequest) returns (google.protobuf.Empty) {}
+  rpc updateUser(UpdateUserRequest) returns (google.protobuf.Empty) {}
+
+  rpc findCredentials(CredentialsRequest) returns (CredentialsResponse) {}
+  rpc findUserRole(UserRoleRequest) returns (UserRoleResponse) {}
+  rpc findUsernames(UsernamesRequest) returns (UsernamesResponse) {}
+
+}
+
+enum UserRole {
+  ROLE_USER = 0;
+  ROLE_MOD = 1;
+  ROLE_ADMIN = 2;
+}
+
+message CreateUserRequest {
+  optional string firstName = 1;
+  optional string lastName = 2;
+  optional string username = 3 [(buf.validate.field).required = true];
+  optional string email = 4 [(buf.validate.field).string.email = true, (buf.validate.field).required = true];
+  optional string password = 5 [(buf.validate.field).required = true];
+  optional UserRole role = 6 [(buf.validate.field).required = true];
+}
+
+message UpdateUserRequest {
+  optional string userId = 1 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
+  optional string firstName = 2;
+  optional string lastName = 3;
+  optional string username = 4;
+  optional string email = 5 [(buf.validate.field).string.email = true];
+  optional string password = 6;
+  optional UserRole role = 7;
+}
+
+message CredentialsRequest {
+  optional string email = 1 [(buf.validate.field).string.email = true, (buf.validate.field).required = true];
+}
+
+message CredentialsResponse {
+  optional string userId = 1 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
+  optional string password = 2 [(buf.validate.field).required = true];
+}
+
+message UserRoleRequest {
+  optional string userId = 1 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
+}
+
+message UserRoleResponse {
+  optional UserRole role = 1 [(buf.validate.field).required = true];
+}
+
+message UsernamesRequest {
+  repeated string userIds = 1 [
+    (buf.validate.field).repeated.min_items = 1,
+    (buf.validate.field).repeated.unique = true,
+    (buf.validate.field).repeated.items.string.len = 24,
+    (buf.validate.field).required = true
+  ];
+}
+
+message UsernamesResponse {
+  repeated string usernames = 1;
+}

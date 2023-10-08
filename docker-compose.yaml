@@ -1,0 +1,33 @@
+version: '3.9'
+
+services:
+  backend:
+    depends_on:
+      - redis
+    build: .
+    env_file:
+      - .env
+    networks:
+      - karma-app-net
+    ports:
+      - 8080:8080
+
+  redis:
+    image: redis/redis-stack:latest
+    hostname: ${REDIS_HOSTNAME}
+    networks:
+      - net
+    ports:
+      - 6380:6379
+      - 8001:8001
+    volumes:
+      - redis-data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+
+volumes:
+  redis-data:
+    driver: local
+
+networks:
+  karma-app-net:
+    driver: bridge
