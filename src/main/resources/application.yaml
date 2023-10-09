@@ -1,1 +1,18 @@
+spring:
+  data:
+    redis:
+      host: ${REDIS_HOSTNAME}
+      port: 6379
 
+jwt:
+  secret: ${SECRET}
+
+KarmaAppPosts:
+  grpc:
+    host: ${KARMA_APP_POSTS_HOST}
+    port: 50051
+
+KarmaAppUsers:
+  grpc:
+    host: ${KARMA_APP_USERS_HOST}
+    port: 50051
