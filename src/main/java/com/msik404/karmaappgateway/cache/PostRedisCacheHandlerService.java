@@ -74,7 +74,8 @@ public class PostRedisCacheHandlerService {
                 final int endBound = Math.min(size, newValuesForCache.size());
                 results = newValuesForCache.subList(0, endBound);
             } else {
-                results = cache.findTopNCached(size).orElseGet(() -> grpcHandlerService.fetchPostsWithUsernames(postsRequest));
+                results = cache.findTopNCached(size)
+                        .orElseGet(() -> grpcHandlerService.fetchPostsWithUsernames(postsRequest));
             }
         } else {
             results = grpcHandlerService.fetchPostsWithUsernames(postsRequest);
