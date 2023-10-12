@@ -21,25 +21,30 @@ service Posts {
   rpc findPostRatings(PostRatingsRequest) returns (PostRatingsResponse) {}
   rpc findPostRatingsWithCreatorId(PostRatingsWithCreatorIdRequest) returns (PostRatingsResponse) {}
   rpc findPostCreatorId(PostCreatorIdRequest) returns (PostCreatorIdResponse) {}
+  rpc findPostWithImageData(PostRequest) returns (PostWithImageData) {}
 
 }
 
+message MongoObjectId {
+  optional string hexString = 1 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
+}
+
 message CreatePostRequest {
-  optional string user_id = 1 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
+  optional MongoObjectId user_id = 1 [(buf.validate.field).required = true];
   optional string headline = 2;
   optional string text = 3;
   optional bytes image_data = 4;
 }
 
 message RatePostRequest {
-  optional string post_id = 1 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
-  optional string user_id = 2 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
+  optional MongoObjectId post_id = 1 [(buf.validate.field).required = true];
+  optional MongoObjectId user_id = 2 [(buf.validate.field).required = true];
   optional bool is_positive = 3 [(buf.validate.field).required = true];
 }
 
 message UnratePostRequest {
-  optional string post_id = 1 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
-  optional string user_id = 2 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
+  optional MongoObjectId post_id = 1 [(buf.validate.field).required = true];
+  optional MongoObjectId user_id = 2 [(buf.validate.field).required = true];
 }
 
 enum PostVisibility {
@@ -49,13 +54,13 @@ enum PostVisibility {
 }
 
 message ChangePostVisibilityRequest {
-  optional string post_id = 1 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
+  optional MongoObjectId post_id = 1 [(buf.validate.field).required = true];
   optional PostVisibility visibility = 2 [(buf.validate.field).required = true];
 }
 
 message ScrollPosition {
   optional uint64 karma_score = 1 [(buf.validate.field).required = true];
-  optional string post_id = 2 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
+  optional MongoObjectId post_id = 2 [(buf.validate.field).required = true];
 }
 
 message PostsRequest {
@@ -66,8 +71,8 @@ message PostsRequest {
 }
 
 message Post {
-  optional string post_id = 1 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
-  optional string user_id = 2 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
+  optional MongoObjectId post_id = 1 [(buf.validate.field).required = true];
+  optional MongoObjectId user_id = 2 [(buf.validate.field).required = true];
   optional string headline = 3;
   optional string text = 4;
   optional sint64 karma_score = 5 [(buf.validate.field).required = true];
@@ -80,11 +85,11 @@ message PostsResponse {
 
 message PostsWithCreatorIdRequest {
   optional PostsRequest posts_request = 1;
-  optional string creator_id = 2 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
+  optional MongoObjectId creator_id = 2 [(buf.validate.field).required = true];
 }
 
 message ImageRequest {
-  optional string post_id = 1 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
+  optional MongoObjectId post_id = 1 [(buf.validate.field).required = true];
 }
 
 message ImageResponse {
@@ -93,11 +98,11 @@ message ImageResponse {
 
 message PostRatingsRequest {
   optional PostsRequest posts_request = 1;
-  optional string client_id = 2 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
+  optional MongoObjectId client_id = 2 [(buf.validate.field).required = true];
 }
 
 message PostRating {
-  optional string post_id = 1 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
+  optional MongoObjectId post_id = 1 [(buf.validate.field).required = true];
   optional bool is_positive = 2 [(buf.validate.field).required = true];
 }
 
@@ -107,13 +112,22 @@ message PostRatingsResponse {
 
 message PostRatingsWithCreatorIdRequest {
   optional PostRatingsRequest posts_ratings_request = 1 [(buf.validate.field).required = true];
-  optional string creator_id = 2 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
+  optional MongoObjectId creator_id = 2 [(buf.validate.field).required = true];
 }
 
 message PostCreatorIdRequest {
-  optional string post_id = 1 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
+  optional MongoObjectId post_id = 1 [(buf.validate.field).required = true];
 }
 
 message PostCreatorIdResponse {
-  optional string user_id = 1 [(buf.validate.field).string.len = 24];
+  optional MongoObjectId user_id = 1;
+}
+
+message PostRequest {
+  optional MongoObjectId post_id = 1 [(buf.validate.field).required = true];
+}
+
+message PostWithImageData {
+  optional Post post = 1 [(buf.validate.field).required = true];
+  optional bytes image_data = 2;
 }

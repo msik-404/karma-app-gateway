@@ -16,8 +16,13 @@ service Users {
 
   rpc findCredentials(CredentialsRequest) returns (CredentialsResponse) {}
   rpc findUserRole(UserRoleRequest) returns (UserRoleResponse) {}
+  rpc findUsername(UsernameRequest) returns (UsernameResponse) {}
   rpc findUsernames(UsernamesRequest) returns (UsernamesResponse) {}
 
+}
+
+message MongoObjectId {
+  optional string hexString = 1 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
 }
 
 enum UserRole {
@@ -36,7 +41,7 @@ message CreateUserRequest {
 }
 
 message UpdateUserRequest {
-  optional string userId = 1 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
+  optional MongoObjectId userId = 1 [(buf.validate.field).required = true];
   optional string firstName = 2;
   optional string lastName = 3;
   optional string username = 4;
@@ -50,23 +55,30 @@ message CredentialsRequest {
 }
 
 message CredentialsResponse {
-  optional string userId = 1 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
+  optional MongoObjectId userId = 1 [(buf.validate.field).required = true];
   optional string password = 2 [(buf.validate.field).required = true];
 }
 
 message UserRoleRequest {
-  optional string userId = 1 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
+  optional MongoObjectId userId = 1 [(buf.validate.field).required = true];
 }
 
 message UserRoleResponse {
   optional UserRole role = 1 [(buf.validate.field).required = true];
 }
 
+message UsernameRequest {
+  optional MongoObjectId userId = 1 [(buf.validate.field).required = true];
+}
+
+message UsernameResponse {
+  optional string username = 1 [(buf.validate.field).required = true];
+}
+
 message UsernamesRequest {
-  repeated string userIds = 1 [
+  repeated MongoObjectId userIds = 1 [
     (buf.validate.field).repeated.min_items = 1,
     (buf.validate.field).repeated.unique = true,
-    (buf.validate.field).repeated.items.string.len = 24,
     (buf.validate.field).required = true
   ];
 }
