@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.msik404.karmaappgateway.RedisConfiguration;
 import com.msik404.karmaappgateway.TestingDataGenerator;
 import com.msik404.karmaappgateway.dto.PostDto;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -350,7 +352,9 @@ class PostRedisCacheTest {
         }
 
         // image is present in cache
-        final Optional<byte[]> optionalCachedImageData = redisCache.getCachedImage(TestingDataGenerator.getIdHexString(postId));
+        final Optional<byte[]> optionalCachedImageData = redisCache.getCachedImage(
+                TestingDataGenerator.getIdHexString(postId));
+
         assertTrue(optionalCachedImageData.isPresent());
         final byte[] cachedImageData = optionalCachedImageData.get();
         assertArrayEquals(imageData, cachedImageData);
@@ -388,7 +392,9 @@ class PostRedisCacheTest {
         }
 
         // image is not present in cache
-        final Optional<byte[]> optionalCachedImageData = redisCache.getCachedImage(TestingDataGenerator.getIdHexString(postId));
+        final Optional<byte[]> optionalCachedImageData = redisCache.getCachedImage(
+                TestingDataGenerator.getIdHexString(postId));
+
         assertFalse(optionalCachedImageData.isPresent());
     }
 }
