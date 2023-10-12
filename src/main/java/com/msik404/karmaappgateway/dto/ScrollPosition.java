@@ -1,4 +1,6 @@
 package com.msik404.karmaappgateway.dto;
 
-public record ScrollPosition(String postIdHexString, long karmaScore) {
+import org.springframework.lang.NonNull;
+
+public record ScrollPosition(@NonNull String postIdHexString, long karmaScore) {
 }
