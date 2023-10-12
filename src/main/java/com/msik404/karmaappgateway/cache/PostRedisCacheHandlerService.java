@@ -62,7 +62,7 @@ public class PostRedisCacheHandlerService {
             @NonNull List<Visibility> visibilities) throws InternalServerErrorException {
 
         final var postsRequest = PostsRequest.newBuilder()
-                .setSize(CACHED_POSTS_AMOUNT)
+                .setSize(size)
                 .addAllVisibilities(visibilities.stream().map(VisibilityMapper::map).toList())
                 .build();
 

@@ -3,20 +3,24 @@ package com.msik404.karmaappgateway.dto;
 import com.msik404.karmaappgateway.comparator.ComparablePost;
 import com.msik404.karmaappgateway.grpc.client.mapper.VisibilityMapper;
 import com.msik404.karmaappposts.grpc.PostVisibility;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class PostDto implements ComparablePost {
 
-    private final String idHexString;
-    private final String userIdHexString;
-    private final String username;
-    private final String headline;
-    private final String text;
+    private String idHexString;
+    private String userIdHexString;
+    private String username;
+    private String headline;
+    private String text;
     private Long karmaScore;
-    private final Visibility visibility;
+    private Visibility visibility;
 
     public PostDto(
             @NonNull String idHexString,
