@@ -10,7 +10,7 @@ import com.msik404.karmaappgateway.dto.PostDto;
 import com.msik404.karmaappgateway.dto.PostWithImageDataDto;
 import com.msik404.karmaappgateway.dto.ScrollPosition;
 import com.msik404.karmaappgateway.dto.Visibility;
-import com.msik404.karmaappgateway.grpc.client.GrpcHandler;
+import com.msik404.karmaappgateway.grpc.client.GrpcHandlerService;
 import com.msik404.karmaappgateway.grpc.client.exception.InternalServerErrorException;
 import com.msik404.karmaappgateway.grpc.client.mapper.MongoObjectIdMapper;
 import com.msik404.karmaappgateway.grpc.client.mapper.PostDtoMapper;
@@ -35,7 +35,7 @@ public class PostRedisCacheHandlerService {
     private final PostsGrpc.PostsFutureStub postsStub;
     private final UsersGrpc.UsersFutureStub usersStub;
 
-    private final GrpcHandler grpcHandler;
+    private final GrpcHandlerService grpcHandlerService;
 
     private static boolean isOnlyActive(@NonNull List<Visibility> visibilities) {
         return visibilities.size() == 1 && visibilities.contains(Visibility.ACTIVE);
@@ -49,7 +49,7 @@ public class PostRedisCacheHandlerService {
                 .addAllVisibilities(List.of(PostVisibility.VIS_ACTIVE))
                 .build();
 
-        final List<PostDto> newValuesForCache = grpcHandler.fetchPostsWithUsernames(postsRequest);
+        final List<PostDto> newValuesForCache = grpcHandlerService.fetchPostsWithUsernames(postsRequest);
 
         cache.reinitializeCache(newValuesForCache);
 
@@ -74,10 +74,10 @@ public class PostRedisCacheHandlerService {
                 final int endBound = Math.min(size, newValuesForCache.size());
                 results = newValuesForCache.subList(0, endBound);
             } else {
-                results = cache.findTopNCached(size).orElseGet(() -> grpcHandler.fetchPostsWithUsernames(postsRequest));
+                results = cache.findTopNCached(size).orElseGet(() -> grpcHandlerService.fetchPostsWithUsernames(postsRequest));
             }
         } else {
-            results = grpcHandler.fetchPostsWithUsernames(postsRequest);
+            results = grpcHandlerService.fetchPostsWithUsernames(postsRequest);
         }
 
         return results;
@@ -122,10 +122,10 @@ public class PostRedisCacheHandlerService {
                 results = newValuesForCache.subList(firstSmallerElementIdx, endBound);
             } else {
                 results = cache.findNextNCached(size, scrollPosition.karmaScore())
-                        .orElseGet(() -> grpcHandler.fetchPostsWithUsernames(postsRequest));
+                        .orElseGet(() -> grpcHandlerService.fetchPostsWithUsernames(postsRequest));
             }
         } else {
-            results = grpcHandler.fetchPostsWithUsernames(postsRequest);
+            results = grpcHandlerService.fetchPostsWithUsernames(postsRequest);
         }
 
         return results;

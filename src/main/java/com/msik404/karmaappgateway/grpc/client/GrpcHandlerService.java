@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class GrpcHandler {
+public class GrpcHandlerService {
 
     private final PostsGrpc.PostsFutureStub postsStub;
     private final UsersGrpc.UsersFutureStub usersStub;
