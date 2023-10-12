@@ -58,9 +58,12 @@ class PostRedisCacheTest {
 
     @NonNull
     private static PostDto getPostDtoForTesting(
-            @NonNull String userIdHexString,
-            @NonNull String postIdHexString,
+            @NonNull long userId,
+            @NonNull long postId,
             long karmaScore) {
+
+        final String postIdHexString = TestingDataGenerator.getIdHexString(postId);
+        final String userIdHexString = TestingDataGenerator.getIdHexString(userId);
 
         final String postKey = getPostKey(postIdHexString);
 
@@ -99,18 +102,18 @@ class PostRedisCacheTest {
         final int postsAmount = 9;
         List<PostDto> posts = new ArrayList<>(postsAmount);
 
-        final String userOneId = TestingDataGenerator.getIdHexString(1);
-        posts.add(getPostDtoForTesting(userOneId, TestingDataGenerator.getIdHexString(1), 4));
-        posts.add(getPostDtoForTesting(userOneId, TestingDataGenerator.getIdHexString(2), -1));
-        posts.add(getPostDtoForTesting(userOneId, TestingDataGenerator.getIdHexString(3), 5));
-        posts.add(getPostDtoForTesting(userOneId, TestingDataGenerator.getIdHexString(4), 5));
-        posts.add(getPostDtoForTesting(userOneId, TestingDataGenerator.getIdHexString(5), 6));
+        final long userOneId = 1;
+        posts.add(getPostDtoForTesting(userOneId, 1, 4));
+        posts.add(getPostDtoForTesting(userOneId, 2, -1));
+        posts.add(getPostDtoForTesting(userOneId, 3, 5));
+        posts.add(getPostDtoForTesting(userOneId, 4, 5));
+        posts.add(getPostDtoForTesting(userOneId, 5, 6));
 
-        final String userTwoId = TestingDataGenerator.getIdHexString(2);
-        posts.add(getPostDtoForTesting(userTwoId, TestingDataGenerator.getIdHexString(6), 3));
-        posts.add(getPostDtoForTesting(userTwoId, TestingDataGenerator.getIdHexString(7), 2));
-        posts.add(getPostDtoForTesting(userTwoId, TestingDataGenerator.getIdHexString(8), 4));
-        posts.add(getPostDtoForTesting(userTwoId, TestingDataGenerator.getIdHexString(9), 0));
+        final long userTwoId = 2;
+        posts.add(getPostDtoForTesting(userTwoId, 6, 3));
+        posts.add(getPostDtoForTesting(userTwoId, 7, 2));
+        posts.add(getPostDtoForTesting(userTwoId, 8, 4));
+        posts.add(getPostDtoForTesting(userTwoId, 9, 0));
 
         posts.sort(new CachedPostComparator());
 
@@ -385,11 +388,11 @@ class PostRedisCacheTest {
     void insertPost_ImageDataIsNonNullAndThisPostIsNotPresentInCacheNorIsImage_ZSetAndHashShouldBeUpdatedAndImageDataShouldBeCached() {
 
         // given
-        final String userIdHexString = TestingDataGenerator.getIdHexString(404);
-        final String postIdHexString = userIdHexString;
+        final long userId = 404;
+        final long postId = userId;
         final long karmaScore = 5;
 
-        final PostDto postToBeInserted = getPostDtoForTesting(userIdHexString, postIdHexString, karmaScore);
+        final PostDto postToBeInserted = getPostDtoForTesting(userId, postId, karmaScore);
 
         final byte[] imageData = "imageData".getBytes();
 
@@ -413,7 +416,7 @@ class PostRedisCacheTest {
         }
 
         // image is present in cache
-        final Optional<byte[]> optionalCachedImageData = redisCache.getCachedImage(postIdHexString);
+        final Optional<byte[]> optionalCachedImageData = redisCache.getCachedImage(TestingDataGenerator.getIdHexString(postId));
         assertTrue(optionalCachedImageData.isPresent());
         final byte[] cachedImageData = optionalCachedImageData.get();
         assertArrayEquals(imageData, cachedImageData);
@@ -423,11 +426,11 @@ class PostRedisCacheTest {
     void insertPost_ImageDataIsNullAndThisPostIsNotPresentInCacheNorIsImage_ZSetAndHashShouldBeUpdatedAndImageDataShouldNotBeCached() {
 
         // given
-        final String userIdHexString = TestingDataGenerator.getIdHexString(404);
-        final String postIdHexString = userIdHexString;
+        final long userId = 404;
+        final long postId = userId;
         final long karmaScore = 5;
 
-        final PostDto postToBeInserted = getPostDtoForTesting(userIdHexString, postIdHexString, karmaScore);
+        final PostDto postToBeInserted = getPostDtoForTesting(userId, postId, karmaScore);
 
         final byte[] imageData = null;
 
@@ -451,7 +454,7 @@ class PostRedisCacheTest {
         }
 
         // image is not present in cache
-        final Optional<byte[]> optionalCachedImageData = redisCache.getCachedImage(postIdHexString);
+        final Optional<byte[]> optionalCachedImageData = redisCache.getCachedImage(TestingDataGenerator.getIdHexString(postId));
         assertFalse(optionalCachedImageData.isPresent());
     }
 }
