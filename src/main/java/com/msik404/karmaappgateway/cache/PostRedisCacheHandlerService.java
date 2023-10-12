@@ -148,7 +148,8 @@ public class PostRedisCacheHandlerService {
         return cache.insertPost(post.postDto(), post.imageData());
     }
 
-    public boolean loadPostDataToCacheIfKarmaScoreIsHighEnough(String postIdHexString) {
+    public boolean loadPostDataToCacheIfKarmaScoreIsHighEnough(
+            @NonNull String postIdHexString) throws InternalServerErrorException {
 
         final var postRequest = PostRequest.newBuilder()
                 .setPostId(MongoObjectIdMapper.mapToPostsMongoObjectId(postIdHexString))
