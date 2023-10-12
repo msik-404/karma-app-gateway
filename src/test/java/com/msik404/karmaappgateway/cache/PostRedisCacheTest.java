@@ -1,19 +1,20 @@
 package com.msik404.karmaappgateway.cache;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalDouble;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.msik404.karmaappgateway.RedisConfiguration;
 import com.msik404.karmaappgateway.TestingDataGenerator;
 import com.msik404.karmaappgateway.dto.PostDto;
-import com.msik404.karmaappgateway.dto.Visibility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.lang.NonNull;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
@@ -31,7 +32,9 @@ class PostRedisCacheTest {
 
     private final PostRedisCache redisCache;
 
-    private static final List<PostDto> TEST_CACHED_POSTS = getPostsForTesting();
+    private static final List<PostDto> TEST_CACHED_POSTS = TestingDataGenerator.getPostsForTesting();
+    private static final TestingDataGenerator.CachedPostComparator TEST_COMPARATOR =
+            new TestingDataGenerator.CachedPostComparator();
 
     @Container
     public static final GenericContainer<?> REDIS_CONTAINER = new GenericContainer(
@@ -49,75 +52,6 @@ class PostRedisCacheTest {
 
         this.redisConnectionFactory = redisConnectionFactory;
         this.redisCache = redisCache;
-    }
-
-    @NonNull
-    private static String getPostKey(@NonNull String postId) {
-        return String.format("post:%s", postId);
-    }
-
-    @NonNull
-    private static PostDto getPostDtoForTesting(
-            @NonNull long userId,
-            @NonNull long postId,
-            long karmaScore) {
-
-        final String postIdHexString = TestingDataGenerator.getIdHexString(postId);
-        final String userIdHexString = TestingDataGenerator.getIdHexString(userId);
-
-        final String postKey = getPostKey(postIdHexString);
-
-        return new PostDto(
-                postIdHexString,
-                userIdHexString,
-                postKey,
-                postKey,
-                postKey,
-                karmaScore,
-                Visibility.ACTIVE
-        );
-    }
-
-    /**
-     * This comparator is made so to mimic redis ordered set reversed range retrieval order.
-     */
-    static class CachedPostComparator implements Comparator<PostDto> {
-
-        @Override
-        public int compare(@NonNull PostDto postOne, @NonNull PostDto postTwo) {
-
-            if (postOne.getKarmaScore().equals(postTwo.getKarmaScore())) {
-                final String postKeyOne = getPostKey(postOne.getIdHexString());
-                final String postKeyTwo = getPostKey(postTwo.getIdHexString());
-                return -postKeyOne.compareTo(postKeyTwo);
-            }
-            return -postOne.getKarmaScore().compareTo(postTwo.getKarmaScore());
-        }
-
-    }
-
-    @NonNull
-    private static List<PostDto> getPostsForTesting() {
-
-        final int postsAmount = 9;
-        List<PostDto> posts = new ArrayList<>(postsAmount);
-
-        final long userOneId = 1;
-        posts.add(getPostDtoForTesting(userOneId, 1, 4));
-        posts.add(getPostDtoForTesting(userOneId, 2, -1));
-        posts.add(getPostDtoForTesting(userOneId, 3, 5));
-        posts.add(getPostDtoForTesting(userOneId, 4, 5));
-        posts.add(getPostDtoForTesting(userOneId, 5, 6));
-
-        final long userTwoId = 2;
-        posts.add(getPostDtoForTesting(userTwoId, 6, 3));
-        posts.add(getPostDtoForTesting(userTwoId, 7, 2));
-        posts.add(getPostDtoForTesting(userTwoId, 8, 4));
-        posts.add(getPostDtoForTesting(userTwoId, 9, 0));
-
-        posts.sort(new CachedPostComparator());
-
-        return posts;
     }
 
     @BeforeEach
@@ -291,7 +225,7 @@ class PostRedisCacheTest {
         // make the first element reference to updatedPost
         updatedGroundTruthPosts.set(0, updatedPost);
         // sort references
-        updatedGroundTruthPosts.sort(new CachedPostComparator());
+        updatedGroundTruthPosts.sort(TEST_COMPARATOR);
 
         for (int i = 0; i < TEST_CACHED_POSTS.size(); i++) {
             assertEquals(updatedGroundTruthPosts.get(i), cachedPosts.get(i));
@@ -392,13 +326,13 @@ class PostRedisCacheTest {
         final long postId = userId;
         final long karmaScore = 5;
 
-        final PostDto postToBeInserted = getPostDtoForTesting(userId, postId, karmaScore);
+        final PostDto postToBeInserted = TestingDataGenerator.getPostDtoForTesting(userId, postId, karmaScore);
 
         final byte[] imageData = "imageData".getBytes();
 
-        List<PostDto> groundTruthPosts = getPostsForTesting();
+        List<PostDto> groundTruthPosts = TestingDataGenerator.getPostsForTesting();
         groundTruthPosts.add(postToBeInserted);
-        groundTruthPosts.sort(new CachedPostComparator());
+        groundTruthPosts.sort(new TestingDataGenerator.CachedPostComparator());
 
         // when
         assertTrue(redisCache.insertPost(postToBeInserted, imageData));
@@ -430,13 +364,13 @@ class PostRedisCacheTest {
         final long postId = userId;
         final long karmaScore = 5;
 
-        final PostDto postToBeInserted = getPostDtoForTesting(userId, postId, karmaScore);
+        final PostDto postToBeInserted = TestingDataGenerator.getPostDtoForTesting(userId, postId, karmaScore);
 
         final byte[] imageData = null;
 
-        List<PostDto> groundTruthPosts = getPostsForTesting();
+        List<PostDto> groundTruthPosts = TestingDataGenerator.getPostsForTesting();
         groundTruthPosts.add(postToBeInserted);
-        groundTruthPosts.sort(new CachedPostComparator());
+        groundTruthPosts.sort(TEST_COMPARATOR);
 
         // when
         assertTrue(redisCache.insertPost(postToBeInserted, imageData));
