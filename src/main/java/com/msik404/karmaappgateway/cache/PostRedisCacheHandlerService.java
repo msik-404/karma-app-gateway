@@ -104,7 +104,7 @@ public class PostRedisCacheHandlerService {
     public List<PostDto> findNextNHandler(
             int size,
             @NonNull List<Visibility> visibilities,
-            @NonNull ScrollPosition scrollPosition) {
+            @NonNull ScrollPosition scrollPosition) throws InternalServerErrorException {
 
         final var postsRequest = PostsRequest.newBuilder()
                 .setSize(CACHED_POSTS_AMOUNT)
