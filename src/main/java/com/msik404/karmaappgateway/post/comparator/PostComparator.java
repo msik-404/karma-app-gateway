@@ -1,4 +1,4 @@
-package com.msik404.karmaappgateway.comparator;
+package com.msik404.karmaappgateway.post.comparator;
 
 import java.util.Comparator;
 
@@ -10,7 +10,7 @@ public class PostComparator implements Comparator<ComparablePost> {
     public int compare(@NonNull ComparablePost postOne, @NonNull ComparablePost postTwo) {
 
         if (postOne.getKarmaScore().equals(postTwo.getKarmaScore())) {
-            return -postOne.getIdHexString().compareTo(postTwo.getIdHexString());
+            return -postOne.getId().compareTo(postTwo.getId());
         }
         return postOne.getKarmaScore().compareTo(postTwo.getKarmaScore());
     }

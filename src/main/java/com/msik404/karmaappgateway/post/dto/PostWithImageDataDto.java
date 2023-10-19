@@ -1,4 +1,4 @@
-package com.msik404.karmaappgateway.dto;
+package com.msik404.karmaappgateway.post.dto;
 
 import lombok.NonNull;
 
