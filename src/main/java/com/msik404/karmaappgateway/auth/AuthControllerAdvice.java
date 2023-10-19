@@ -13,17 +13,17 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class AuthControllerAdvice extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(AuthenticationException.class)
-    public ProblemDetail badCredentialsException(@NonNull final AuthenticationException ex) {
+    public ProblemDetail badCredentialsException(@NonNull AuthenticationException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
     }
 
     @ExceptionHandler(JwtException.class)
-    public ProblemDetail jwtException(@NonNull final JwtException ex) {
+    public ProblemDetail jwtException(@NonNull JwtException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ProblemDetail illegalArgumentException(@NonNull final IllegalArgumentException ex) {
+    public ProblemDetail illegalArgumentException(@NonNull IllegalArgumentException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
     }
 

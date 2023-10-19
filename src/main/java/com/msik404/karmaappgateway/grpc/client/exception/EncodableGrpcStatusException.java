@@ -6,7 +6,7 @@ import org.springframework.lang.NonNull;
 
 public abstract class EncodableGrpcStatusException extends RuntimeException implements EncodableException, GrpcStatusException {
 
-    public EncodableGrpcStatusException(@NonNull final String errorMessage) {
+    public EncodableGrpcStatusException(@NonNull String errorMessage) {
         super(errorMessage);
     }
 

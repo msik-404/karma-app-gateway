@@ -7,7 +7,7 @@ public class ExceptionEncoder {
     public final static String EXCEPTION_ID_PREFIX = "exceptionId: ";
 
     @NonNull
-    public static String encode(@NonNull final String exceptionIdString, @NonNull final String errorMessage) {
+    public static String encode(@NonNull String exceptionIdString, @NonNull String errorMessage) {
         return String.format("%s%s %s", EXCEPTION_ID_PREFIX, exceptionIdString, errorMessage);
     }
 

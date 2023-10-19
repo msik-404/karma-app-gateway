@@ -13,10 +13,10 @@ public class ToObjectIdDeserializer extends JsonDeserializer<ObjectId> {
 
     @Override
     public ObjectId deserialize(
-            @NonNull final JsonParser p,
-            @NonNull final DeserializationContext ctxt) throws IOException, JacksonException {
+            @NonNull JsonParser p,
+            @NonNull DeserializationContext ctxt) throws IOException {
 
-        final String objectIdHexString = p.readValueAs(String.class);
+        String objectIdHexString = p.readValueAs(String.class);
 
         if (objectIdHexString == null) {
             return null;

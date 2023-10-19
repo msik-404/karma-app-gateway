@@ -87,7 +87,7 @@ public class PostRedisCache {
      */
     public boolean isEmpty() {
 
-        final List<Object> results = redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
+        List<Object> results = redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
             StringRedisConnection stringRedisConn = (StringRedisConnection) connection;
 
             stringRedisConn.exists(KARMA_SCORE_ZSET_KEY);
@@ -128,7 +128,7 @@ public class PostRedisCache {
     private List<PostDto> findCachedByZSet(
             @NonNull Collection<ZSetOperations.TypedTuple<String>> postIdKeySetWithScores) {
 
-        final int size = postIdKeySetWithScores.size();
+        int size = postIdKeySetWithScores.size();
 
         List<String> postIdKeyList = new ArrayList<>(size);
         List<Double> postScoreList = new ArrayList<>(size);
@@ -137,8 +137,8 @@ public class PostRedisCache {
             postScoreList.add(tuple.getScore());
         }
 
-        final HashOperations<String, String, String> hashOps = redisTemplate.opsForHash();
-        final List<String> serializedResults = hashOps.multiGet(POST_HASH_KEY, postIdKeyList);
+        HashOperations<String, String, String> hashOps = redisTemplate.opsForHash();
+        List<String> serializedResults = hashOps.multiGet(POST_HASH_KEY, postIdKeyList);
 
         List<PostDto> results = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
@@ -153,7 +153,7 @@ public class PostRedisCache {
     @NonNull
     public Optional<List<PostDto>> findTopNCached(int size) {
 
-        final Set<ZSetOperations.TypedTuple<String>> postIdKeySetWithScores = redisTemplate.opsForZSet()
+        Set<ZSetOperations.TypedTuple<String>> postIdKeySetWithScores = redisTemplate.opsForZSet()
                 .reverseRangeWithScores(KARMA_SCORE_ZSET_KEY, 0, size - 1);
 
         if (postIdKeySetWithScores == null || postIdKeySetWithScores.size() != size) {
@@ -168,7 +168,7 @@ public class PostRedisCache {
 
         // offset is one because we have to skip first element with karmaScore, otherwise we will have duplicates
         // in pagination
-        final Set<ZSetOperations.TypedTuple<String>> postIdKeySetWithScores = redisTemplate.opsForZSet()
+        Set<ZSetOperations.TypedTuple<String>> postIdKeySetWithScores = redisTemplate.opsForZSet()
                 .reverseRangeByScoreWithScores(
                         KARMA_SCORE_ZSET_KEY, Double.NEGATIVE_INFINITY, karmaScore, 1, size);
 
@@ -182,14 +182,14 @@ public class PostRedisCache {
     @NonNull
     public OptionalDouble updateKarmaScoreIfPresent(@NonNull ObjectId postId, double delta) {
 
-        final ZSetOperations<String, String> zSetOps = redisTemplate.opsForZSet();
-        final String postIdKey = getPostKey(postId);
+        ZSetOperations<String, String> zSetOps = redisTemplate.opsForZSet();
+        String postIdKey = getPostKey(postId);
 
         if (zSetOps.score(KARMA_SCORE_ZSET_KEY, postIdKey) == null) {
             return OptionalDouble.empty();
         }
 
-        final Double newScore = zSetOps.incrementScore(KARMA_SCORE_ZSET_KEY, postIdKey, delta);
+        Double newScore = zSetOps.incrementScore(KARMA_SCORE_ZSET_KEY, postIdKey, delta);
 
         if (newScore == null) {
             return OptionalDouble.empty();
@@ -199,9 +199,9 @@ public class PostRedisCache {
 
     public boolean deletePostFromCache(@NonNull ObjectId postId) {
 
-        final String postIdKey = getPostKey(postId);
+        String postIdKey = getPostKey(postId);
 
-        final List<Object> results = redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
+        List<Object> results = redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
             StringRedisConnection stringRedisConn = (StringRedisConnection) connection;
 
             stringRedisConn.zRem(KARMA_SCORE_ZSET_KEY, postIdKey);
@@ -217,14 +217,14 @@ public class PostRedisCache {
     @NonNull
     public Optional<Boolean> isKarmaScoreGreaterThanLowestScoreInZSet(long karmaScore) {
 
-        final Set<ZSetOperations.TypedTuple<String>> lowestScorePostIdWithScore = redisTemplate.opsForZSet()
+        Set<ZSetOperations.TypedTuple<String>> lowestScorePostIdWithScore = redisTemplate.opsForZSet()
                 .rangeWithScores(KARMA_SCORE_ZSET_KEY, 0, 0);
 
         if (lowestScorePostIdWithScore == null || lowestScorePostIdWithScore.size() != 1) {
             return Optional.empty();
         }
 
-        final Double lowestScore = lowestScorePostIdWithScore.iterator().next().getScore();
+        Double lowestScore = lowestScorePostIdWithScore.iterator().next().getScore();
         if (lowestScore == null) {
             return Optional.empty();
         }
@@ -234,11 +234,11 @@ public class PostRedisCache {
 
     public boolean insertPost(@NonNull PostDto post, @Nullable byte[] imageData) {
 
-        final String serializedPost = serialize(post);
+        String serializedPost = serialize(post);
 
-        final List<Object> results = redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
+        List<Object> results = redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
 
-            final byte[] postKeyBytes = getPostKey(post.getId()).getBytes();
+            byte[] postKeyBytes = getPostKey(post.getId()).getBytes();
 
             connection.zSetCommands().zAdd(
                     KARMA_SCORE_ZSET_KEY.getBytes(),

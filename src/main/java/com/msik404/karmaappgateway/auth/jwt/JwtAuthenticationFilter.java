@@ -35,27 +35,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(
-            @NonNull final HttpServletRequest request,
-            @NonNull final HttpServletResponse response,
-            @NonNull final FilterChain filterChain
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
     ) throws ServletException, IOException, JwtException, IllegalArgumentException, RestFromGrpcException,
             InternalRestException {
 
-        final String authHeader = request.getHeader("Authorization");
+        String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith(TOKEN_PREFIX)) {
             filterChain.doFilter(request, response);
             return;
         }
-        final String jwt = authHeader.substring(TOKEN_PREFIX.length());
-        final Claims claims = jwtService.extractAllClaims(jwt);
+        String jwt = authHeader.substring(TOKEN_PREFIX.length());
+        Claims claims = jwtService.extractAllClaims(jwt);
         // 1. Get subject from token claims, null if something is wrong
         // 2. Checks whether user is not already authenticated,
         // this is useful when there are many authentication methods.
         if (claims.getSubject() != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             // parse userId Long type represented as string to Long type
-            final ObjectId userId = new ObjectId(claims.getSubject());
-            final Role role = grpcService.findUserRole(userId);
-            final var authentication = new UsernamePasswordAuthenticationToken(
+            ObjectId userId = new ObjectId(claims.getSubject());
+            Role role = grpcService.findUserRole(userId);
+            var authentication = new UsernamePasswordAuthenticationToken(
                     userId,
                     null,
                     List.of(new SimpleGrantedAuthority(role.name()))
@@ -64,7 +64,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             authentication.setDetails(new WebAuthenticationDetails(request));
             // Docs state that this is required for thread safety:
             // https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html
-            final SecurityContext context = SecurityContextHolder.createEmptyContext();
+            SecurityContext context = SecurityContextHolder.createEmptyContext();
             context.setAuthentication(authentication);
             SecurityContextHolder.setContext(context);
         }

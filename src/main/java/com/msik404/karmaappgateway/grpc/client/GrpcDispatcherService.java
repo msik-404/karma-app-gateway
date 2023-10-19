@@ -37,46 +37,46 @@ public class GrpcDispatcherService {
 
     @NonNull
     private static RestFromGrpcException decodeGrpcException(
-            @NonNull final ExecutionException ex) throws BadEncodingException {
+            @NonNull ExecutionException ex) throws BadEncodingException {
 
-        final var statusRuntimeException = (StatusRuntimeException) ex.getCause();
-        final String encodedException = statusRuntimeException.getMessage();
+        var statusRuntimeException = (StatusRuntimeException) ex.getCause();
+        String encodedException = statusRuntimeException.getMessage();
 
         return ExceptionDecoder.decodeException(encodedException);
     }
 
     @NonNull
     private List<PostDto> loadUsernames(
-            @NonNull final List<Post> posts
+            @NonNull List<Post> posts
     ) throws ExecutionException, InterruptedException {
 
-        final Map<String, List<Integer>> userIdHexStringToPostIndices = new HashMap<>();
+        Map<String, List<Integer>> userIdHexStringToPostIndices = new HashMap<>();
         for (int i = 0; i < posts.size(); i++) {
-            final String userIdHexString = posts.get(i).getUserId().getHexString();
+            String userIdHexString = posts.get(i).getUserId().getHexString();
             userIdHexStringToPostIndices
                     .computeIfAbsent(userIdHexString, key -> new ArrayList<>())
                     .add(i);
         }
 
-        final var usernamesRequestBuilder = UsernamesRequest.newBuilder();
+        var usernamesRequestBuilder = UsernamesRequest.newBuilder();
         for (Map.Entry<String, List<Integer>> entry : userIdHexStringToPostIndices.entrySet()) {
             usernamesRequestBuilder.addUserIdHexStrings(entry.getKey());
         }
 
         // usernamesRequest userId hexString map to usernamesResponse usernames in the same order
-        final var usernamesRequest = usernamesRequestBuilder.build();
+        var usernamesRequest = usernamesRequestBuilder.build();
 
-        final UsernamesResponse usernamesResponse = usersStub.findUsernames(usernamesRequest).get();
-        final List<String> usernames = usernamesResponse.getUsernamesList();
+        UsernamesResponse usernamesResponse = usersStub.findUsernames(usernamesRequest).get();
+        List<String> usernames = usernamesResponse.getUsernamesList();
 
         // Output is the same size as input. If some username for a given userId was not found an empty string is places in its place
-        final List<PostDto> postsWithUsernames = new ArrayList<>(Collections.nCopies(posts.size(), null));
+        List<PostDto> postsWithUsernames = new ArrayList<>(Collections.nCopies(posts.size(), null));
         for (int i = 0; i < usernamesRequest.getUserIdHexStringsCount(); i++) {
-            final String userIdHexString = usernamesRequest.getUserIdHexStrings(i);
+            String userIdHexString = usernamesRequest.getUserIdHexStrings(i);
 
-            final List<Integer> postIndices = userIdHexStringToPostIndices.get(userIdHexString);
+            List<Integer> postIndices = userIdHexStringToPostIndices.get(userIdHexString);
             for (int postIdx : postIndices) {
-                final Post post = posts.get(postIdx);
+                Post post = posts.get(postIdx);
                 postsWithUsernames.set(postIdx, new PostDto(
                         new ObjectId(post.getPostId().getHexString()),
                         new ObjectId(post.getUserId().getHexString()),
@@ -93,13 +93,13 @@ public class GrpcDispatcherService {
 
     @NonNull
     public List<PostDto> fetchPostsWithUsernames(
-            @NonNull final PostsRequest request
+            @NonNull PostsRequest request
     ) throws RestFromGrpcException, InternalRestException {
 
         try {
             // get posts by request from posts microservice
-            final PostsResponse postsResponse = postsStub.findPosts(request).get();
-            final List<Post> posts = postsResponse.getPostsList();
+            PostsResponse postsResponse = postsStub.findPosts(request).get();
+            List<Post> posts = postsResponse.getPostsList();
 
             return loadUsernames(posts);
 
@@ -112,21 +112,21 @@ public class GrpcDispatcherService {
 
     @NonNull
     public List<PostDto> fetchPostsWithUsernames(
-            @NonNull final PostsRequest postsRequest,
-            @NonNull final UserIdRequest creatorIdRequest
+            @NonNull PostsRequest postsRequest,
+            @NonNull UserIdRequest creatorIdRequest
     ) throws RestFromGrpcException, InternalRestException {
 
         try {
             // get userId by username from users microservice
-            final MongoObjectId creatorId = usersStub.findUserId(creatorIdRequest).get();
+            MongoObjectId creatorId = usersStub.findUserId(creatorIdRequest).get();
 
-            final var postsWithCreatorIdRequest = PostsWithCreatorIdRequest.newBuilder()
+            var postsWithCreatorIdRequest = PostsWithCreatorIdRequest.newBuilder()
                     .setPostsRequest(postsRequest)
                     .setCreatorId(MongoObjectIdMapper.mapToPostsMongoObjectId(creatorId))
                     .build();
 
             // get posts by PostsRequest and with given creatorId equal to userId
-            final PostsResponse response = postsStub.findPostsWithCreatorId(postsWithCreatorIdRequest).get();
+            PostsResponse response = postsStub.findPostsWithCreatorId(postsWithCreatorIdRequest).get();
 
             return PostDtoZipper.zipIntoPostsWithUsernames(response.getPostsList(), creatorIdRequest.getUsername());
 
@@ -139,23 +139,23 @@ public class GrpcDispatcherService {
 
     @NonNull
     public List<PostDto> fetchPostsWithUsernames(
-            @NonNull final PostsWithCreatorIdRequest request
+            @NonNull PostsWithCreatorIdRequest request
     ) throws RestFromGrpcException, InternalRestException {
 
         try {
             // async request for posts to posts microservice
-            final ListenableFuture<PostsResponse> postsResponseFuture = postsStub.findPostsWithCreatorId(request);
+            ListenableFuture<PostsResponse> postsResponseFuture = postsStub.findPostsWithCreatorId(request);
 
-            final var usernameRequest = UsernameRequest.newBuilder()
+            var usernameRequest = UsernameRequest.newBuilder()
                     .setUserId(MongoObjectIdMapper.mapToUsersMongoObjectId(request.getCreatorId()))
                     .build();
 
             // async request for username to users microservice
-            final ListenableFuture<UsernameResponse> usernameResponseFuture = usersStub.findUsername(usernameRequest);
+            ListenableFuture<UsernameResponse> usernameResponseFuture = usersStub.findUsername(usernameRequest);
 
             // wait for responses
-            final PostsResponse postsResponse = postsResponseFuture.get();
-            final UsernameResponse usernameResponse = usernameResponseFuture.get();
+            PostsResponse postsResponse = postsResponseFuture.get();
+            UsernameResponse usernameResponse = usernameResponseFuture.get();
 
             return PostDtoZipper.zipIntoPostsWithUsernames(
                     postsResponse.getPostsList(),
@@ -171,17 +171,17 @@ public class GrpcDispatcherService {
 
     @NonNull
     public PostWithImageDataDto fetchPostWithImage(
-            @NonNull final PostRequest postRequest
+            @NonNull PostRequest postRequest
     ) throws RestFromGrpcException, InternalRestException {
 
         try {
-            final PostWithImageData post = postsStub.findPostWithImageData(postRequest).get();
+            PostWithImageData post = postsStub.findPostWithImageData(postRequest).get();
 
-            final var usernameRequest = UsernameRequest.newBuilder()
+            var usernameRequest = UsernameRequest.newBuilder()
                     .setUserId(MongoObjectIdMapper.mapToUsersMongoObjectId(post.getPost().getUserId()))
                     .build();
 
-            final UsernameResponse usernameResponse = usersStub.findUsername(usernameRequest).get();
+            UsernameResponse usernameResponse = usersStub.findUsername(usernameRequest).get();
 
             return PostDtoMapper.map(post, usernameResponse.getUsername());
 
@@ -194,11 +194,11 @@ public class GrpcDispatcherService {
 
     @NonNull
     public List<PostRatingResponse> fetchRatings(
-            @NonNull final PostRatingsRequest request
+            @NonNull PostRatingsRequest request
     ) throws RestFromGrpcException, InternalRestException {
 
         try {
-            final PostRatingsResponse response = postsStub.findPostRatings(request).get();
+            PostRatingsResponse response = postsStub.findPostRatings(request).get();
 
             return response.getPostRatingsList().stream().map(PostRatingMapper::map).toList();
 
@@ -211,19 +211,19 @@ public class GrpcDispatcherService {
 
     @NonNull
     public List<PostRatingResponse> fetchRatings(
-            @NonNull final PostRatingsRequest ratingsRequest,
-            @NonNull final UserIdRequest creatorIdRequest
+            @NonNull PostRatingsRequest ratingsRequest,
+            @NonNull UserIdRequest creatorIdRequest
     ) throws RestFromGrpcException, InternalRestException {
 
         try {
-            final MongoObjectId creatorIdResponse = usersStub.findUserId(creatorIdRequest).get();
+            MongoObjectId creatorIdResponse = usersStub.findUserId(creatorIdRequest).get();
 
-            final var request = PostRatingsWithCreatorIdRequest.newBuilder()
+            var request = PostRatingsWithCreatorIdRequest.newBuilder()
                     .setPostsRatingsRequest(ratingsRequest)
                     .setCreatorId(MongoObjectIdMapper.mapToPostsMongoObjectId(creatorIdResponse))
                     .build();
 
-            final PostRatingsResponse response = postsStub.findPostRatingsWithCreatorId(request).get();
+            PostRatingsResponse response = postsStub.findPostRatingsWithCreatorId(request).get();
 
             return response.getPostRatingsList().stream().map(PostRatingMapper::map).toList();
 
@@ -236,11 +236,11 @@ public class GrpcDispatcherService {
 
     @NonNull
     public byte[] fetchImage(
-            @NonNull final ImageRequest request
+            @NonNull ImageRequest request
     ) throws RestFromGrpcException, InternalRestException {
 
         try {
-            final ImageResponse imageResponse = postsStub.findImage(request).get();
+            ImageResponse imageResponse = postsStub.findImage(request).get();
 
             return imageResponse.getImageData().toByteArray();
 
@@ -252,7 +252,7 @@ public class GrpcDispatcherService {
     }
 
     public void createPost(
-            @NonNull final CreatePostRequest request
+            @NonNull CreatePostRequest request
     ) throws RestFromGrpcException, InternalRestException {
 
         try {
@@ -265,11 +265,11 @@ public class GrpcDispatcherService {
     }
 
     public int ratePost(
-            @NonNull final RatePostRequest request
+            @NonNull RatePostRequest request
     ) throws RestFromGrpcException, InternalRestException {
 
         try {
-            final ChangedRatingResponse response = postsStub.ratePost(request).get();
+            ChangedRatingResponse response = postsStub.ratePost(request).get();
 
             return response.getDelta();
 
@@ -281,11 +281,11 @@ public class GrpcDispatcherService {
     }
 
     public int unratePost(
-            @NonNull final UnratePostRequest request
+            @NonNull UnratePostRequest request
     ) throws RestFromGrpcException, InternalRestException {
 
         try {
-            final ChangedRatingResponse response = postsStub.unratePost(request).get();
+            ChangedRatingResponse response = postsStub.unratePost(request).get();
 
             return response.getDelta();
 
@@ -297,7 +297,7 @@ public class GrpcDispatcherService {
     }
 
     public void changePostVisibility(
-            @NonNull final ChangePostVisibilityRequest request
+            @NonNull ChangePostVisibilityRequest request
     ) throws RestFromGrpcException, InternalRestException {
 
         try {
@@ -311,11 +311,11 @@ public class GrpcDispatcherService {
 
     @NonNull
     public String fetchPostCreatorId(
-            @NonNull final PostCreatorIdRequest request
+            @NonNull PostCreatorIdRequest request
     ) throws RestFromGrpcException, InternalRestException {
 
         try {
-            final PostCreatorIdResponse response = postsStub.findPostCreatorId(request).get();
+            PostCreatorIdResponse response = postsStub.findPostCreatorId(request).get();
 
             return response.getUserId().getHexString();
 
@@ -328,11 +328,11 @@ public class GrpcDispatcherService {
 
     @NonNull
     public Role fetchUserRole(
-            @NonNull final UserRoleRequest request
+            @NonNull UserRoleRequest request
     ) throws RestFromGrpcException, InternalRestException {
 
         try {
-            final UserRoleResponse response = usersStub.findUserRole(request).get();
+            UserRoleResponse response = usersStub.findUserRole(request).get();
 
             return RoleMapper.map(response.getRole());
 
@@ -345,11 +345,11 @@ public class GrpcDispatcherService {
 
     @NonNull
     public UserDetailsImpl fetchUserCredentials(
-            @NonNull final CredentialsRequest request
+            @NonNull CredentialsRequest request
     ) throws RestFromGrpcException, InternalRestException {
 
         try {
-            final CredentialsResponse response = usersStub.findCredentials(request).get();
+            CredentialsResponse response = usersStub.findCredentials(request).get();
 
             return CredentialsMapper.map(response);
 
@@ -361,7 +361,7 @@ public class GrpcDispatcherService {
     }
 
     public void createUser(
-            @NonNull final CreateUserRequest request
+            @NonNull CreateUserRequest request
     ) throws RestFromGrpcException, InternalRestException {
 
         try {

@@ -17,9 +17,9 @@ public class PostDtoZipper {
 
         assert usernames.size() == posts.size();
 
-        final List<PostDto> postsWithUsernames = new ArrayList<>(posts.size());
+        List<PostDto> postsWithUsernames = new ArrayList<>(posts.size());
         for (int i = 0; i < posts.size(); i++) {
-            final Post post = posts.get(i);
+            Post post = posts.get(i);
             postsWithUsernames.add(
                     new PostDto(
                             new ObjectId(post.getPostId().getHexString()),
@@ -40,9 +40,9 @@ public class PostDtoZipper {
             @NonNull List<Post> posts,
             @NonNull String username) {
 
-        final List<PostDto> postsWithUsernames = new ArrayList<>(posts.size());
+        List<PostDto> postsWithUsernames = new ArrayList<>(posts.size());
         for (int i = 0; i < posts.size(); i++) {
-            final Post post = posts.get(i);
+            Post post = posts.get(i);
             postsWithUsernames.add(
                     new PostDto(
                             new ObjectId(post.getPostId().getHexString()),

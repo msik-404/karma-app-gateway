@@ -21,8 +21,8 @@ public class PostResponseModelAssembler implements RepresentationModelAssembler<
     @Override
     public EntityModel<PostResponse> toModel(@NonNull PostDto postDto) {
 
-        final ObjectId postId = postDto.getId();
-        final var postResponse = new PostResponse(postDto);
+        ObjectId postId = postDto.getId();
+        var postResponse = new PostResponse(postDto);
 
         List<Link> links = new ArrayList<>();
 

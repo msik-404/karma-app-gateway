@@ -54,7 +54,7 @@ public class PostController {
             @RequestParam(value = "karma_score", required = false) Long karmaScore
     ) throws RestFromGrpcException, InternalRestException {
 
-        final List<Visibility> visibilities = createVisibilityList(active, hidden, false);
+        List<Visibility> visibilities = createVisibilityList(active, hidden, false);
 
         ScrollPosition scrollPosition = null;
         if (postId != null && karmaScore != null) {
@@ -87,7 +87,7 @@ public class PostController {
     @NonNull
     private static List<Visibility> createVisibilityList(boolean active, boolean hidden, boolean deleted) {
 
-        final List<Visibility> visibilities = new ArrayList<>();
+        List<Visibility> visibilities = new ArrayList<>();
 
         if (active) {
             visibilities.add(Visibility.ACTIVE);
@@ -111,7 +111,7 @@ public class PostController {
             @RequestParam(value = "username", required = false) String username
     ) throws RestFromGrpcException, InternalRestException {
 
-        final List<Visibility> visibilities = createVisibilityList(active, hidden, false);
+        List<Visibility> visibilities = createVisibilityList(active, hidden, false);
 
         ScrollPosition scrollPosition = null;
         if (postId != null && karmaScore != null) {
@@ -134,7 +134,7 @@ public class PostController {
             @RequestParam(value = "username", required = false) String username
     ) throws RestFromGrpcException, InternalRestException {
 
-        final List<Visibility> visibilities = createVisibilityList(active, hidden, false);
+        List<Visibility> visibilities = createVisibilityList(active, hidden, false);
 
         ScrollPosition scrollPosition = null;
         if (postId != null && karmaScore != null) {
@@ -155,7 +155,7 @@ public class PostController {
             @RequestParam(value = "username", required = false) String username
     ) throws RestFromGrpcException, InternalRestException {
 
-        final List<Visibility> visibilities = createVisibilityList(active, hidden, deleted);
+        List<Visibility> visibilities = createVisibilityList(active, hidden, deleted);
 
         ScrollPosition scrollPosition = null;
         if (postId != null && karmaScore != null) {

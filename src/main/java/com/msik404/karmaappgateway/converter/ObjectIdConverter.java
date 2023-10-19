@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class ObjectIdConverter implements Converter<String, ObjectId> {
 
     @Override
-    public ObjectId convert(@NonNull final String idHexString) {
+    public ObjectId convert(@NonNull String idHexString) {
         return new ObjectId(idHexString);
     }
 

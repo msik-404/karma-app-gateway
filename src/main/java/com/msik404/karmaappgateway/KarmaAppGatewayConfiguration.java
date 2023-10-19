@@ -41,7 +41,7 @@ public class KarmaAppGatewayConfiguration implements WebMvcConfigurer {
     }
 
     @Override
-    public void addFormatters(@NonNull final FormatterRegistry registry) {
+    public void addFormatters(@NonNull FormatterRegistry registry) {
         registry.addConverter(new ObjectIdConverter());
     }
 

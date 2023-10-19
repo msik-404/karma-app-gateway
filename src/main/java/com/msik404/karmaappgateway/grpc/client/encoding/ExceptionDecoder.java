@@ -20,13 +20,13 @@ import org.springframework.lang.NonNull;
 public class ExceptionDecoder {
 
     @NonNull
-    public static String decodeExceptionId(@NonNull final String encodedException) throws BadEncodingException {
+    public static String decodeExceptionId(@NonNull String encodedException) throws BadEncodingException {
 
         // this pattern will match only the first occurrence;
-        final String regex = String.format("\\A.*?%s([^ ]+)", ExceptionEncoder.EXCEPTION_ID_PREFIX);
-        final var pattern = Pattern.compile(regex);
+        String regex = String.format("\\A.*?%s([^ ]+)", ExceptionEncoder.EXCEPTION_ID_PREFIX);
+        var pattern = Pattern.compile(regex);
 
-        final Matcher matcher = pattern.matcher(encodedException);
+        Matcher matcher = pattern.matcher(encodedException);
 
         if (matcher.find()) {
             return matcher.group(1);
@@ -37,7 +37,7 @@ public class ExceptionDecoder {
 
     @NonNull
     private static RestFromGrpcException decodeExceptionImpl(
-            @NonNull final String exceptionId
+            @NonNull String exceptionId
     ) throws BadEncodingException {
 
         return switch (exceptionId) {
@@ -62,10 +62,10 @@ public class ExceptionDecoder {
 
     @NonNull
     public static RestFromGrpcException decodeException(
-            @NonNull final String encodedException
+            @NonNull String encodedException
     ) throws BadEncodingException {
 
-        final String exceptionId = decodeExceptionId(encodedException);
+        String exceptionId = decodeExceptionId(encodedException);
 
         return decodeExceptionImpl(exceptionId);
     }

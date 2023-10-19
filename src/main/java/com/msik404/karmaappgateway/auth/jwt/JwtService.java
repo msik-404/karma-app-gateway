@@ -32,14 +32,14 @@ public class JwtService {
      */
     @NonNull
     public String generateJwt(
-            @NonNull final ObjectId clientId,
-            @Nullable final Map<String, Object> opt) {
+            @NonNull ObjectId clientId,
+            @Nullable Map<String, Object> opt) {
 
-        final long currentTime = System.currentTimeMillis();
+        long currentTime = System.currentTimeMillis();
         // one hour
-        final long expirationTime = currentTime + TIME_TO_EXPIRE;
+        long expirationTime = currentTime + TIME_TO_EXPIRE;
 
-        final JwtBuilder builder = Jwts.builder();
+        JwtBuilder builder = Jwts.builder();
 
         if (opt != null) {
             builder.claims().add(opt);
@@ -54,7 +54,7 @@ public class JwtService {
     }
 
     public Claims extractAllClaims(
-            @NonNull final String jwt
+            @NonNull String jwt
     ) throws JwtException, IllegalArgumentException {
 
         return Jwts.parser()

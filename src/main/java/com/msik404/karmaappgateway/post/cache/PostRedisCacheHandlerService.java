@@ -36,7 +36,7 @@ public class PostRedisCacheHandlerService {
     @NonNull
     public List<PostDto> updateCache() throws RestFromGrpcException, InternalRestException {
 
-        final List<PostDto> newValuesForCache = grpcService.findTopNPosts(
+        List<PostDto> newValuesForCache = grpcService.findTopNPosts(
                 CACHED_POSTS_AMOUNT,
                 List.of(Visibility.ACTIVE)
         );
@@ -56,8 +56,8 @@ public class PostRedisCacheHandlerService {
 
         if (isOnlyActive(visibilities)) {
             if (cache.isEmpty()) {
-                final List<PostDto> newValuesForCache = updateCache();
-                final int endBound = Math.min(size, newValuesForCache.size());
+                List<PostDto> newValuesForCache = updateCache();
+                int endBound = Math.min(size, newValuesForCache.size());
                 results = newValuesForCache.subList(0, endBound);
             } else {
                 results = cache.findTopNCached(size)
@@ -72,7 +72,7 @@ public class PostRedisCacheHandlerService {
 
     private int findNextSmallerThan(@NonNull List<PostDto> topPosts, @NonNull ScrollPosition scrollPosition) {
 
-        final int value = Collections.binarySearch(
+        int value = Collections.binarySearch(
                 topPosts,
                 new BasicComparablePost(scrollPosition.postId(), scrollPosition.karmaScore()),
                 new PostComparator().reversed()
@@ -97,10 +97,10 @@ public class PostRedisCacheHandlerService {
 
         if (isOnlyActive(visibilities)) {
             if (cache.isEmpty()) {
-                final List<PostDto> newValuesForCache = updateCache();
-                final int firstSmallerElementIdx = findNextSmallerThan(newValuesForCache, scrollPosition);
+                List<PostDto> newValuesForCache = updateCache();
+                int firstSmallerElementIdx = findNextSmallerThan(newValuesForCache, scrollPosition);
 
-                final int endBound = Math.min(firstSmallerElementIdx + size, newValuesForCache.size());
+                int endBound = Math.min(firstSmallerElementIdx + size, newValuesForCache.size());
                 results = newValuesForCache.subList(firstSmallerElementIdx, endBound);
             } else {
                 results = cache.findNextNCached(size, scrollPosition.karmaScore())
@@ -115,14 +115,14 @@ public class PostRedisCacheHandlerService {
 
     public boolean loadToCacheIfKarmaScoreIsHighEnough(@NonNull PostWithImageDataDto post) {
 
-        final Optional<Boolean> optionalIsHighEnough = cache.isKarmaScoreGreaterThanLowestScoreInZSet(
+        Optional<Boolean> optionalIsHighEnough = cache.isKarmaScoreGreaterThanLowestScoreInZSet(
                 post.postDto().getKarmaScore());
 
         if (optionalIsHighEnough.isEmpty()) {
             return false;
         }
 
-        final boolean isHighEnough = optionalIsHighEnough.get();
+        boolean isHighEnough = optionalIsHighEnough.get();
         if (!isHighEnough) {
             return false;
         }
@@ -135,7 +135,7 @@ public class PostRedisCacheHandlerService {
     ) throws RestFromGrpcException, InternalRestException {
 
         try {
-            final PostWithImageDataDto post = grpcService.findByPostId(postId);
+            PostWithImageDataDto post = grpcService.findByPostId(postId);
 
             return loadToCacheIfKarmaScoreIsHighEnough(post);
 

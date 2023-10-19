@@ -34,12 +34,12 @@ public class AuthService {
 
     public LoginResponse login(@NonNull LoginRequest request) throws AuthenticationException {
 
-        final var authentication = authenticationManager.authenticate(
+        var authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password()));
 
         // This authentication comes from UserDetailsServiceImpl and principal object is UserDetailsImpl.
-        final var userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        final ObjectId clientId = userDetails.userId();
+        var userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        ObjectId clientId = userDetails.userId();
 
         return new LoginResponse(jwtService.generateJwt(clientId, null));
     }

@@ -43,7 +43,7 @@ public class GrpcService {
             @NonNull Collection<Visibility> visibilities
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var postsRequest = PostsRequest.newBuilder()
+        var postsRequest = PostsRequest.newBuilder()
                 .setSize(size)
                 .addAllVisibilities(visibilities.stream().map(VisibilityMapper::map).toList())
                 .build();
@@ -58,7 +58,7 @@ public class GrpcService {
             @NonNull ScrollPosition scrollPosition
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var postsRequest = PostsRequest.newBuilder()
+        var postsRequest = PostsRequest.newBuilder()
                 .setSize(size)
                 .addAllVisibilities(visibilities.stream().map(VisibilityMapper::map).toList())
                 .setPosition(ScrollPositionMapper.map(scrollPosition))
@@ -74,12 +74,12 @@ public class GrpcService {
             @NonNull String creatorUsername
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var postsRequest = PostsRequest.newBuilder()
+        var postsRequest = PostsRequest.newBuilder()
                 .setSize(size)
                 .addAllVisibilities(visibilities.stream().map(VisibilityMapper::map).toList())
                 .build();
 
-        final var userIdRequest = UserIdRequest.newBuilder()
+        var userIdRequest = UserIdRequest.newBuilder()
                 .setUsername(creatorUsername)
                 .build();
 
@@ -94,13 +94,13 @@ public class GrpcService {
             @NonNull String creatorUsername
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var postsRequest = PostsRequest.newBuilder()
+        var postsRequest = PostsRequest.newBuilder()
                 .setSize(size)
                 .addAllVisibilities(visibilities.stream().map(VisibilityMapper::map).toList())
                 .setPosition(ScrollPositionMapper.map(scrollPosition))
                 .build();
 
-        final var userIdRequest = UserIdRequest.newBuilder()
+        var userIdRequest = UserIdRequest.newBuilder()
                 .setUsername(creatorUsername)
                 .build();
 
@@ -114,12 +114,12 @@ public class GrpcService {
             @NonNull ObjectId creatorId
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var postsRequest = PostsRequest.newBuilder()
+        var postsRequest = PostsRequest.newBuilder()
                 .setSize(size)
                 .addAllVisibilities(visibilities.stream().map(VisibilityMapper::map).toList())
                 .build();
 
-        final var postsWithCreatorIdRequest = PostsWithCreatorIdRequest.newBuilder()
+        var postsWithCreatorIdRequest = PostsWithCreatorIdRequest.newBuilder()
                 .setPostsRequest(postsRequest)
                 .setCreatorId(MongoObjectIdMapper.mapToPostsMongoObjectId(creatorId))
                 .build();
@@ -135,13 +135,13 @@ public class GrpcService {
             @NonNull ScrollPosition scrollPosition
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var postsRequest = PostsRequest.newBuilder()
+        var postsRequest = PostsRequest.newBuilder()
                 .setSize(size)
                 .addAllVisibilities(visibilities.stream().map(VisibilityMapper::map).toList())
                 .setPosition(ScrollPositionMapper.map(scrollPosition))
                 .build();
 
-        final var postsWithCreatorIdRequest = PostsWithCreatorIdRequest.newBuilder()
+        var postsWithCreatorIdRequest = PostsWithCreatorIdRequest.newBuilder()
                 .setPostsRequest(postsRequest)
                 .setCreatorId(MongoObjectIdMapper.mapToPostsMongoObjectId(creatorId))
                 .build();
@@ -154,7 +154,7 @@ public class GrpcService {
             @NonNull ObjectId postId
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var postRequest = PostRequest.newBuilder()
+        var postRequest = PostRequest.newBuilder()
                 .setPostId(MongoObjectIdMapper.mapToPostsMongoObjectId(postId))
                 .build();
 
@@ -168,12 +168,12 @@ public class GrpcService {
             @NonNull ObjectId clientId
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var postRequest = PostsRequest.newBuilder()
+        var postRequest = PostsRequest.newBuilder()
                 .setSize(size)
                 .addAllVisibilities(visibilities.stream().map(VisibilityMapper::map).toList())
                 .build();
 
-        final var ratingsRequest = PostRatingsRequest.newBuilder()
+        var ratingsRequest = PostRatingsRequest.newBuilder()
                 .setPostsRequest(postRequest)
                 .setClientId(MongoObjectIdMapper.mapToPostsMongoObjectId(clientId))
                 .build();
@@ -189,13 +189,13 @@ public class GrpcService {
             @NonNull ScrollPosition scrollPosition
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var postRequest = PostsRequest.newBuilder()
+        var postRequest = PostsRequest.newBuilder()
                 .setSize(size)
                 .addAllVisibilities(visibilities.stream().map(VisibilityMapper::map).toList())
                 .setPosition(ScrollPositionMapper.map(scrollPosition))
                 .build();
 
-        final var ratingsRequest = PostRatingsRequest.newBuilder()
+        var ratingsRequest = PostRatingsRequest.newBuilder()
                 .setPostsRequest(postRequest)
                 .setClientId(MongoObjectIdMapper.mapToPostsMongoObjectId(clientId))
                 .build();
@@ -211,17 +211,17 @@ public class GrpcService {
             @NonNull String creatorUsername
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var postRequest = PostsRequest.newBuilder()
+        var postRequest = PostsRequest.newBuilder()
                 .setSize(size)
                 .addAllVisibilities(visibilities.stream().map(VisibilityMapper::map).toList())
                 .build();
 
-        final var ratingsRequest = PostRatingsRequest.newBuilder()
+        var ratingsRequest = PostRatingsRequest.newBuilder()
                 .setPostsRequest(postRequest)
                 .setClientId(MongoObjectIdMapper.mapToPostsMongoObjectId(clientId))
                 .build();
 
-        final var creatorIdRequest = UserIdRequest.newBuilder().setUsername(creatorUsername).build();
+        var creatorIdRequest = UserIdRequest.newBuilder().setUsername(creatorUsername).build();
 
         return dispatcher.fetchRatings(ratingsRequest, creatorIdRequest);
     }
@@ -235,18 +235,18 @@ public class GrpcService {
             @NonNull String creatorUsername
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var postRequest = PostsRequest.newBuilder()
+        var postRequest = PostsRequest.newBuilder()
                 .setSize(size)
                 .addAllVisibilities(visibilities.stream().map(VisibilityMapper::map).toList())
                 .setPosition(ScrollPositionMapper.map(scrollPosition))
                 .build();
 
-        final var ratingsRequest = PostRatingsRequest.newBuilder()
+        var ratingsRequest = PostRatingsRequest.newBuilder()
                 .setPostsRequest(postRequest)
                 .setClientId(MongoObjectIdMapper.mapToPostsMongoObjectId(clientId))
                 .build();
 
-        final var creatorIdRequest = UserIdRequest.newBuilder().setUsername(creatorUsername).build();
+        var creatorIdRequest = UserIdRequest.newBuilder().setUsername(creatorUsername).build();
 
         return dispatcher.fetchRatings(ratingsRequest, creatorIdRequest);
     }
@@ -256,7 +256,7 @@ public class GrpcService {
             @NonNull ObjectId postId
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var request = ImageRequest.newBuilder()
+        var request = ImageRequest.newBuilder()
                 .setPostId(MongoObjectIdMapper.mapToPostsMongoObjectId(postId))
                 .build();
 
@@ -269,7 +269,7 @@ public class GrpcService {
             @Nullable byte[] imageData
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var requestBuilder = CreatePostRequest.newBuilder()
+        var requestBuilder = CreatePostRequest.newBuilder()
                 .setUserId(MongoObjectId.newBuilder().setHexString(clientId.toHexString()).build())
                 .setHeadline(creationRequest.headline())
                 .setText(creationRequest.text());
@@ -287,7 +287,7 @@ public class GrpcService {
             boolean isPositive
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var request = RatePostRequest.newBuilder()
+        var request = RatePostRequest.newBuilder()
                 .setPostId(MongoObjectIdMapper.mapToPostsMongoObjectId(postId))
                 .setUserId(MongoObjectIdMapper.mapToPostsMongoObjectId(clientId))
                 .setIsPositive(isPositive)
@@ -301,7 +301,7 @@ public class GrpcService {
             @NonNull ObjectId clientId
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var request = UnratePostRequest.newBuilder()
+        var request = UnratePostRequest.newBuilder()
                 .setPostId(MongoObjectIdMapper.mapToPostsMongoObjectId(postId))
                 .setUserId(MongoObjectIdMapper.mapToPostsMongoObjectId(clientId))
                 .build();
@@ -314,7 +314,7 @@ public class GrpcService {
             @NonNull Visibility visibility
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var request = ChangePostVisibilityRequest.newBuilder()
+        var request = ChangePostVisibilityRequest.newBuilder()
                 .setPostId(MongoObjectIdMapper.mapToPostsMongoObjectId(postId))
                 .setVisibility(VisibilityMapper.map(visibility))
                 .build();
@@ -327,7 +327,7 @@ public class GrpcService {
             @NonNull ObjectId postId
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var request = PostCreatorIdRequest.newBuilder()
+        var request = PostCreatorIdRequest.newBuilder()
                 .setPostId(MongoObjectIdMapper.mapToPostsMongoObjectId(postId))
                 .build();
 
@@ -339,7 +339,7 @@ public class GrpcService {
             @NonNull ObjectId userId
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var request = UserRoleRequest.newBuilder()
+        var request = UserRoleRequest.newBuilder()
                 .setUserId(MongoObjectIdMapper.mapToUsersMongoObjectId(userId))
                 .build();
 
@@ -351,7 +351,7 @@ public class GrpcService {
             @NonNull String email
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var request = CredentialsRequest.newBuilder()
+        var request = CredentialsRequest.newBuilder()
                 .setEmail(email)
                 .build();
 
@@ -362,7 +362,7 @@ public class GrpcService {
             @NonNull RegisterRequest registerRequest
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var requestBuilder = CreateUserRequest.newBuilder()
+        var requestBuilder = CreateUserRequest.newBuilder()
                 .setEmail(registerRequest.email())
                 .setUsername(registerRequest.username())
                 .setPassword(bCryptPasswordEncoder.encode(registerRequest.password()))

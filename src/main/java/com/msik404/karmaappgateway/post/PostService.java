@@ -68,8 +68,8 @@ public class PostService {
     ) throws RestFromGrpcException, InternalRestException {
 
         // controller authentication objects come from filter and are UsernamePasswordAuthenticationToken.
-        final var authentication = SecurityContextHolder.getContext().getAuthentication();
-        final var clientId = (ObjectId) authentication.getPrincipal();
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var clientId = (ObjectId) authentication.getPrincipal();
 
         List<PostDto> results;
 
@@ -90,8 +90,8 @@ public class PostService {
             @Nullable String creatorUsername
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var authentication = SecurityContextHolder.getContext().getAuthentication();
-        final var clientId = (ObjectId) authentication.getPrincipal();
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var clientId = (ObjectId) authentication.getPrincipal();
 
         List<PostRatingResponse> results;
 
@@ -120,7 +120,7 @@ public class PostService {
     ) throws RestFromGrpcException, InternalRestException {
 
         return cache.getCachedImage(postId).orElseGet(() -> {
-            final byte[] imageData = grpcService.findImage(postId);
+            byte[] imageData = grpcService.findImage(postId);
             if (imageData.length == 0) {
                 throw new ImageNotFoundException();
             }
@@ -134,12 +134,12 @@ public class PostService {
             @NonNull MultipartFile image
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var authentication = SecurityContextHolder.getContext().getAuthentication();
-        final var clientId = (ObjectId) authentication.getPrincipal();
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var clientId = (ObjectId) authentication.getPrincipal();
 
         try {
             if (!image.isEmpty()) {
-                final byte[] imageData = image.getBytes();
+                byte[] imageData = image.getBytes();
                 grpcService.createPost(clientId, request, imageData);
                 cache.cacheImage(clientId, imageData);
             }
@@ -153,16 +153,16 @@ public class PostService {
             boolean isNewRatingPositive
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var authentication = SecurityContextHolder.getContext().getAuthentication();
-        final var clientId = (ObjectId) authentication.getPrincipal();
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var clientId = (ObjectId) authentication.getPrincipal();
 
-        final int delta = grpcService.ratePost(postId, clientId, isNewRatingPositive);
+        int delta = grpcService.ratePost(postId, clientId, isNewRatingPositive);
 
         if (delta == 0) { // there is no point in updating cached score if delta is zero.
             return;
         }
 
-        final OptionalDouble optionalNewKarmaScore = cache.updateKarmaScoreIfPresent(postId, delta);
+        OptionalDouble optionalNewKarmaScore = cache.updateKarmaScoreIfPresent(postId, delta);
         if (optionalNewKarmaScore.isEmpty()) { // this means that this post is not cached
             cacheHandler.loadPostDataToCacheIfKarmaScoreIsHighEnough(postId);
         }
@@ -172,10 +172,10 @@ public class PostService {
             @NonNull ObjectId postId
     ) throws RestFromGrpcException, InternalRestException {
 
-        final var authentication = SecurityContextHolder.getContext().getAuthentication();
-        final var clientId = (ObjectId) authentication.getPrincipal();
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var clientId = (ObjectId) authentication.getPrincipal();
 
-        final int delta = grpcService.unratePost(postId, clientId);
+        int delta = grpcService.unratePost(postId, clientId);
 
         if (delta == 0) { // there is no point in updating cached score if delta is zero.
             return;
@@ -206,17 +206,17 @@ public class PostService {
             @NonNull Visibility visibility
     ) throws AccessDeniedException, RestFromGrpcException, InternalRestException {
 
-        final var authentication = SecurityContextHolder.getContext().getAuthentication();
-        final var clientId = (ObjectId) authentication.getPrincipal();
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var clientId = (ObjectId) authentication.getPrincipal();
 
-        final PostWithImageDataDto post = grpcService.findByPostId(postId);
+        PostWithImageDataDto post = grpcService.findByPostId(postId);
 
         if (!clientId.equals(post.postDto().getUserId())) {
             throw new AccessDeniedException("Access denied");
         }
 
-        final boolean isVisibilityDeleted = post.postDto().getVisibility().equals(Visibility.DELETED);
-        final boolean isUserAdmin = authentication.getAuthorities().contains(
+        boolean isVisibilityDeleted = post.postDto().getVisibility().equals(Visibility.DELETED);
+        boolean isUserAdmin = authentication.getAuthorities().contains(
                 new SimpleGrantedAuthority(Role.ADMIN.name()));
 
         if (isVisibilityDeleted && !isUserAdmin) {
