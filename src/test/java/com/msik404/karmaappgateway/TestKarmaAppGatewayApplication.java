@@ -10,14 +10,14 @@ import org.testcontainers.utility.DockerImageName;
 @TestConfiguration(proxyBeanMethods = false)
 public class TestKarmaAppGatewayApplication {
 
-	@Bean
-	@ServiceConnection(name = "redis")
-	GenericContainer<?> redisContainer() {
-		return new GenericContainer<>(DockerImageName.parse("redis:latest")).withExposedPorts(6379);
-	}
+    @Bean
+    @ServiceConnection(name = "redis")
+    GenericContainer<?> redisContainer() {
+        return new GenericContainer<>(DockerImageName.parse("redis:latest")).withExposedPorts(6379);
+    }
 
-	public static void main(String[] args) {
-		SpringApplication.from(KarmaAppGatewayApplication::main).with(TestKarmaAppGatewayApplication.class).run(args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.from(KarmaAppGatewayApplication::main).with(TestKarmaAppGatewayApplication.class).run(args);
+    }
 
 }

@@ -16,7 +16,7 @@ services:
     image: redis/redis-stack:latest
     hostname: ${REDIS_HOSTNAME}
     networks:
-      - net
+      - karma-app-net
     ports:
       - 6380:6379
       - 8001:8001
@@ -30,4 +30,5 @@ volumes:
 
 networks:
   karma-app-net:
-    driver: bridge
+    name: karma-app-net
+    external: true
