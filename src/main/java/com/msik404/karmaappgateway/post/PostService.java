@@ -32,7 +32,6 @@ public class PostService {
     private final PostRedisCache cache;
     private final PostRedisCacheHandlerService cacheHandler;
 
-    // todo: break down these classes so that there are no nullable parameters
     @NonNull
     public List<PostDto> findPaginatedPosts(
             int size,
@@ -77,8 +76,7 @@ public class PostService {
         if (scrollPosition == null) {
             results = grpcService.findTopNPostsByCreatorId(size, visibilities, clientId);
         } else {
-            results = grpcService.findNextNPostsByCreatorId(
-                    size, visibilities, clientId, scrollPosition);
+            results = grpcService.findNextNPostsByCreatorId(size, visibilities, clientId, scrollPosition);
         }
 
         return results;
@@ -211,7 +209,6 @@ public class PostService {
         final var authentication = SecurityContextHolder.getContext().getAuthentication();
         final var clientId = (ObjectId) authentication.getPrincipal();
 
-        // todo: there is a lot of error handling to be done
         final PostWithImageDataDto post = grpcService.findByPostId(postId);
 
         if (!clientId.equals(post.postDto().getUserId())) {
