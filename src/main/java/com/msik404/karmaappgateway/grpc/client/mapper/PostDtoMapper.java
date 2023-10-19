@@ -1,9 +1,10 @@
 package com.msik404.karmaappgateway.grpc.client.mapper;
 
-import com.msik404.karmaappgateway.dto.PostDto;
-import com.msik404.karmaappgateway.dto.PostWithImageDataDto;
+import com.msik404.karmaappgateway.post.dto.PostDto;
+import com.msik404.karmaappgateway.post.dto.PostWithImageDataDto;
 import com.msik404.karmaappposts.grpc.Post;
 import com.msik404.karmaappposts.grpc.PostWithImageData;
+import org.bson.types.ObjectId;
 import org.springframework.lang.NonNull;
 
 public class PostDtoMapper {
@@ -12,8 +13,8 @@ public class PostDtoMapper {
     public static PostDto map(@NonNull Post post, @NonNull String username) {
 
         return new PostDto(
-                post.getPostId().getHexString(),
-                post.getUserId().getHexString(),
+                new ObjectId(post.getPostId().getHexString()),
+                new ObjectId(post.getUserId().getHexString()),
                 username,
                 post.hasHeadline() ? post.getHeadline() : null,
                 post.hasText() ? post.getText() : null,

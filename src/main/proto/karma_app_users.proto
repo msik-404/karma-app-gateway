@@ -18,6 +18,7 @@ service Users {
   rpc findUserRole(UserRoleRequest) returns (UserRoleResponse) {}
   rpc findUsername(UsernameRequest) returns (UsernameResponse) {}
   rpc findUsernames(UsernamesRequest) returns (UsernamesResponse) {}
+  rpc findUserId(UserIdRequest) returns (MongoObjectId) {}
 
 }
 
@@ -57,6 +58,7 @@ message CredentialsRequest {
 message CredentialsResponse {
   optional MongoObjectId userId = 1 [(buf.validate.field).required = true];
   optional string password = 2 [(buf.validate.field).required = true];
+  optional UserRole role = 3 [(buf.validate.field).required = true];
 }
 
 message UserRoleRequest {
@@ -75,9 +77,11 @@ message UsernameResponse {
   optional string username = 1 [(buf.validate.field).required = true];
 }
 
+// Here I cannot use MongoObjectId, because unique constraint does not work for custom messages.
 message UsernamesRequest {
-  repeated MongoObjectId userIds = 1 [
+  repeated string userIdHexStrings = 1 [
     (buf.validate.field).repeated.min_items = 1,
+    (buf.validate.field).repeated.items.string.len = 24,
     (buf.validate.field).repeated.unique = true,
     (buf.validate.field).required = true
   ];
@@ -85,4 +89,8 @@ message UsernamesRequest {
 
 message UsernamesResponse {
   repeated string usernames = 1;
+}
+
+message UserIdRequest {
+  optional string username = 1 [(buf.validate.field).required = true];
 }

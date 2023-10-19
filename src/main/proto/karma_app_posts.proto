@@ -12,8 +12,8 @@ import "buf/validate/validate.proto";
 service Posts {
 
   rpc createPost(CreatePostRequest) returns (google.protobuf.Empty) {}
-  rpc ratePost(RatePostRequest) returns (google.protobuf.Empty) {}
-  rpc unratePost(UnratePostRequest) returns (google.protobuf.Empty) {}
+  rpc ratePost(RatePostRequest) returns (ChangedRatingResponse) {}
+  rpc unratePost(UnratePostRequest) returns (ChangedRatingResponse) {}
   rpc changePostVisibility(ChangePostVisibilityRequest) returns (google.protobuf.Empty) {}
   rpc findPosts(PostsRequest) returns (PostsResponse) {}
   rpc findPostsWithCreatorId(PostsWithCreatorIdRequest) returns (PostsResponse) {}
@@ -40,6 +40,10 @@ message RatePostRequest {
   optional MongoObjectId post_id = 1 [(buf.validate.field).required = true];
   optional MongoObjectId user_id = 2 [(buf.validate.field).required = true];
   optional bool is_positive = 3 [(buf.validate.field).required = true];
+}
+
+message ChangedRatingResponse {
+  optional int32 delta = 1;
 }
 
 message UnratePostRequest {

@@ -1,7 +1,7 @@
 package com.msik404.karmaappgateway.grpc.client.mapper;
 
-import com.msik404.karmaappgateway.dto.Visibility;
 import com.msik404.karmaappgateway.grpc.client.exception.UnsupportedVisibilityException;
+import com.msik404.karmaappgateway.post.dto.Visibility;
 import com.msik404.karmaappposts.grpc.PostVisibility;
 import org.springframework.lang.NonNull;
 
