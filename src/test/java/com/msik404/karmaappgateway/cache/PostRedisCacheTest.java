@@ -8,15 +8,16 @@ import java.util.OptionalDouble;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.msik404.karmaappgateway.RedisConfiguration;
 import com.msik404.karmaappgateway.TestingDataGenerator;
-import com.msik404.karmaappgateway.dto.PostDto;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import com.msik404.karmaappgateway.post.cache.PostRedisCache;
+import com.msik404.karmaappgateway.post.dto.PostDto;
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.lang.NonNull;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
@@ -43,7 +44,7 @@ class PostRedisCacheTest {
             DockerImageName.parse("redis:alpine")).withExposedPorts(6379);
 
     @DynamicPropertySource
-    private static void registerRedisProperties(DynamicPropertyRegistry registry) {
+    private static void registerRedisProperties(@NonNull DynamicPropertyRegistry registry) {
 
         registry.add("spring.data.redis.host", REDIS_CONTAINER::getHost);
         registry.add("spring.data.redis.port", () -> REDIS_CONTAINER.getMappedPort(6379).toString());
@@ -166,9 +167,9 @@ class PostRedisCacheTest {
         final byte[] dummyImageData = "imageData".getBytes();
 
         // when
-        assertTrue(redisCache.cacheImage(post.getIdHexString(), dummyImageData));
+        assertTrue(redisCache.cacheImage(post.getId(), dummyImageData));
 
-        final Optional<byte[]> cachedImageData = redisCache.getCachedImage(post.getIdHexString());
+        final Optional<byte[]> cachedImageData = redisCache.getCachedImage(post.getId());
 
         // then
         assertTrue(cachedImageData.isPresent());
@@ -182,7 +183,7 @@ class PostRedisCacheTest {
         final PostDto post = TEST_CACHED_POSTS.get(0);
 
         // when
-        final Optional<byte[]> cachedImageData = redisCache.getCachedImage(post.getIdHexString());
+        final Optional<byte[]> cachedImageData = redisCache.getCachedImage(post.getId());
 
         // then
         assertFalse(cachedImageData.isPresent());
@@ -197,7 +198,7 @@ class PostRedisCacheTest {
         final double delta = -3;
 
         // when
-        OptionalDouble newScore = redisCache.updateKarmaScoreIfPresent(post.getIdHexString(), delta);
+        OptionalDouble newScore = redisCache.updateKarmaScoreIfPresent(post.getId(), delta);
 
         // then
         assertTrue(newScore.isPresent());
@@ -213,8 +214,8 @@ class PostRedisCacheTest {
         assertEquals(TEST_CACHED_POSTS.size(), cachedPosts.size());
 
         final PostDto updatedPost = new PostDto(
-                post.getIdHexString(),
-                post.getUserIdHexString(),
+                post.getId(),
+                post.getUserId(),
                 post.getUsername(),
                 post.getHeadline(),
                 post.getText(),
@@ -238,7 +239,7 @@ class PostRedisCacheTest {
     void updateKarmaScoreIfPresent_PostIdIsNonExistingAndDeltaIsOne_EmptyOptional() {
 
         // given
-        final String nonExistentUserId = TestingDataGenerator.getIdHexString(404);
+        final ObjectId nonExistentUserId = TestingDataGenerator.getId(404);
 
         final double delta = 1;
 
@@ -256,7 +257,7 @@ class PostRedisCacheTest {
         final PostDto post = TEST_CACHED_POSTS.get(0);
 
         // when
-        boolean wasSuccessful = redisCache.deletePostFromCache(post.getIdHexString());
+        boolean wasSuccessful = redisCache.deletePostFromCache(post.getId());
 
         // then
         assertTrue(wasSuccessful);
@@ -353,7 +354,7 @@ class PostRedisCacheTest {
 
         // image is present in cache
         final Optional<byte[]> optionalCachedImageData = redisCache.getCachedImage(
-                TestingDataGenerator.getIdHexString(postId));
+                TestingDataGenerator.getId(postId));
 
         assertTrue(optionalCachedImageData.isPresent());
         final byte[] cachedImageData = optionalCachedImageData.get();
@@ -393,7 +394,7 @@ class PostRedisCacheTest {
 
         // image is not present in cache
         final Optional<byte[]> optionalCachedImageData = redisCache.getCachedImage(
-                TestingDataGenerator.getIdHexString(postId));
+                TestingDataGenerator.getId(postId));
 
         assertFalse(optionalCachedImageData.isPresent());
     }

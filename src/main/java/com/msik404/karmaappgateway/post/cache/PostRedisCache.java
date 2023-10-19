@@ -1,11 +1,12 @@
-package com.msik404.karmaappgateway.cache;
+package com.msik404.karmaappgateway.post.cache;
 
 import java.time.Duration;
 import java.util.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.msik404.karmaappgateway.dto.PostDto;
+import com.msik404.karmaappgateway.post.dto.PostDto;
 import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
 import org.springframework.data.redis.connection.DefaultStringTuple;
 import org.springframework.data.redis.connection.RedisStringCommands;
 import org.springframework.data.redis.connection.RedisZSetCommands;
@@ -30,12 +31,12 @@ public class PostRedisCache {
     private static final Duration TIMEOUT = Duration.ofSeconds(3600);
 
     @NonNull
-    private static String getPostKey(String postId) {
-        return String.format("%s:%s", POST_PREFIX, postId);
+    private static String getPostKey(@NonNull ObjectId postId) {
+        return String.format("%s:%s", POST_PREFIX, postId.toHexString());
     }
 
     @NonNull
-    private static String getPostImageKey(String postId) {
+    private static String getPostImageKey(@NonNull ObjectId postId) {
         return getPostKey(postId) + ":image";
     }
 
@@ -55,13 +56,13 @@ public class PostRedisCache {
 
         Set<StringRedisConnection.StringTuple> tuplesToAdd = new HashSet<>(posts.size());
         for (PostDto post : posts) {
-            var tuple = new DefaultStringTuple(getPostKey(post.getIdHexString()), (double) post.getKarmaScore());
+            var tuple = new DefaultStringTuple(getPostKey(post.getId()), (double) post.getKarmaScore());
             tuplesToAdd.add(tuple);
         }
 
         Map<String, String> valuesMap = new HashMap<>(posts.size());
         for (PostDto post : posts) {
-            valuesMap.put(getPostKey(post.getIdHexString()), serialize(post));
+            valuesMap.put(getPostKey(post.getId()), serialize(post));
         }
 
         redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
@@ -98,7 +99,7 @@ public class PostRedisCache {
         return results.size() == 2 && !(Boolean) results.get(0) && !(Boolean) results.get(1);
     }
 
-    public boolean cacheImage(@NonNull String postId, byte[] imageData) {
+    public boolean cacheImage(@NonNull ObjectId postId, byte[] imageData) {
 
         Object results = redisTemplate.execute((RedisCallback<Object>) connection ->
                 connection.stringCommands().set(
@@ -112,7 +113,7 @@ public class PostRedisCache {
     }
 
     @NonNull
-    public Optional<byte[]> getCachedImage(@NonNull String postId) {
+    public Optional<byte[]> getCachedImage(@NonNull ObjectId postId) {
 
         Object results = redisTemplate.execute((RedisCallback<Object>) connection ->
                 connection.stringCommands().getEx(
@@ -179,7 +180,7 @@ public class PostRedisCache {
     }
 
     @NonNull
-    public OptionalDouble updateKarmaScoreIfPresent(@NonNull String postId, double delta) {
+    public OptionalDouble updateKarmaScoreIfPresent(@NonNull ObjectId postId, double delta) {
 
         final ZSetOperations<String, String> zSetOps = redisTemplate.opsForZSet();
         final String postIdKey = getPostKey(postId);
@@ -196,7 +197,7 @@ public class PostRedisCache {
         return OptionalDouble.of(newScore);
     }
 
-    public boolean deletePostFromCache(@NonNull String postId) {
+    public boolean deletePostFromCache(@NonNull ObjectId postId) {
 
         final String postIdKey = getPostKey(postId);
 
@@ -237,7 +238,7 @@ public class PostRedisCache {
 
         final List<Object> results = redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
 
-            final byte[] postKeyBytes = getPostKey(post.getIdHexString()).getBytes();
+            final byte[] postKeyBytes = getPostKey(post.getId()).getBytes();
 
             connection.zSetCommands().zAdd(
                     KARMA_SCORE_ZSET_KEY.getBytes(),
@@ -254,7 +255,7 @@ public class PostRedisCache {
 
             if (imageData != null) {
                 connection.stringCommands().set(
-                        getPostImageKey(post.getIdHexString()).getBytes(),
+                        getPostImageKey(post.getId()).getBytes(),
                         imageData,
                         Expiration.from(TIMEOUT),
                         RedisStringCommands.SetOption.ifAbsent()

@@ -4,37 +4,38 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import com.msik404.karmaappgateway.dto.PostDto;
-import com.msik404.karmaappgateway.dto.Visibility;
+import com.msik404.karmaappgateway.post.dto.PostDto;
+import com.msik404.karmaappgateway.post.dto.Visibility;
+import org.bson.types.ObjectId;
 import org.springframework.lang.NonNull;
 
 public class TestingDataGenerator {
 
     @NonNull
-    public static String getIdHexString(long id) {
+    public static ObjectId getId(long id) {
 
-        return String.format("%024d", id);
+        return new ObjectId(String.format("%024d", id));
     }
 
     @NonNull
-    private static String getPostKey(@NonNull String postId) {
-        return String.format("post:%s", postId);
+    private static String getPostKey(@NonNull ObjectId postId) {
+        return String.format("post:%s", postId.toHexString());
     }
 
     @NonNull
     public static PostDto getPostDtoForTesting(
-            @NonNull long userId,
-            @NonNull long postId,
+            @NonNull long userIdLong,
+            @NonNull long postIdLong,
             long karmaScore) {
 
-        final String postIdHexString = getIdHexString(postId);
-        final String userIdHexString = getIdHexString(userId);
+        final ObjectId postId = getId(postIdLong);
+        final ObjectId userId = getId(userIdLong);
 
-        final String postKey = getPostKey(postIdHexString);
+        final String postKey = getPostKey(postId);
 
         return new PostDto(
-                postIdHexString,
-                userIdHexString,
+                postId,
+                userId,
                 postKey,
                 postKey,
                 postKey,
@@ -52,8 +53,8 @@ public class TestingDataGenerator {
         public int compare(@NonNull PostDto postOne, @NonNull PostDto postTwo) {
 
             if (postOne.getKarmaScore().equals(postTwo.getKarmaScore())) {
-                final String postKeyOne = getPostKey(postOne.getIdHexString());
-                final String postKeyTwo = getPostKey(postTwo.getIdHexString());
+                final String postKeyOne = getPostKey(postOne.getId());
+                final String postKeyTwo = getPostKey(postTwo.getId());
                 return -postKeyOne.compareTo(postKeyTwo);
             }
             return -postOne.getKarmaScore().compareTo(postTwo.getKarmaScore());
