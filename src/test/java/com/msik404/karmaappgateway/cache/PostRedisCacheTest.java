@@ -44,7 +44,7 @@ class PostRedisCacheTest {
             DockerImageName.parse("redis:alpine")).withExposedPorts(6379);
 
     @DynamicPropertySource
-    private static void registerRedisProperties(@NonNull DynamicPropertyRegistry registry) {
+    private static void registerRedisProperties(DynamicPropertyRegistry registry) {
 
         registry.add("spring.data.redis.host", REDIS_CONTAINER::getHost);
         registry.add("spring.data.redis.port", () -> REDIS_CONTAINER.getMappedPort(6379).toString());

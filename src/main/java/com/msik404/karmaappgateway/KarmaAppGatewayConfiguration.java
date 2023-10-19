@@ -25,7 +25,7 @@ public class KarmaAppGatewayConfiguration implements WebMvcConfigurer {
 
     @NonNull
     @Bean
-    public AuthenticationProvider authenticationProvider(@NonNull UserDetailsServiceImpl userDetailsService) {
+    public AuthenticationProvider authenticationProvider(UserDetailsServiceImpl userDetailsService) {
 
         var authProvider = new DaoAuthenticationProvider(bCryptPasswordEncoder());
         authProvider.setUserDetailsService(userDetailsService);
@@ -34,14 +34,13 @@ public class KarmaAppGatewayConfiguration implements WebMvcConfigurer {
 
     @NonNull
     @Bean
-    public AuthenticationManager authenticationManager(
-            @NonNull AuthenticationConfiguration configuration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
 
         return configuration.getAuthenticationManager();
     }
 
     @Override
-    public void addFormatters(@NonNull FormatterRegistry registry) {
+    public void addFormatters(FormatterRegistry registry) {
         registry.addConverter(new ObjectIdConverter());
     }
 

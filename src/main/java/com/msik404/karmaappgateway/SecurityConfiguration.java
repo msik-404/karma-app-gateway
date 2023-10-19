@@ -36,7 +36,7 @@ public class SecurityConfiguration {
 
     @NonNull
     @Bean
-    public SecurityFilterChain securityFilterChain(@NonNull HttpSecurity httpSecurity) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
         // I disabled many of the filters, because I don't like to have
         // things that I won't use
