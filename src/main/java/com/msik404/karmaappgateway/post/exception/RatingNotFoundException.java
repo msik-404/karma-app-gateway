@@ -1,4 +1,4 @@
-package com.msik404.karmaappgateway.grpc.client.exception;
+package com.msik404.karmaappgateway.post.exception;
 
 import com.msik404.karmaappgateway.exception.RestFromGrpcException;
 import io.grpc.Status;
@@ -7,12 +7,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.lang.NonNull;
 
-public class UnsupportedVisibilityException extends RestFromGrpcException {
+public class RatingNotFoundException extends RestFromGrpcException {
 
-    public final static String Id = "UnsupportedVisibility";
-    private final static String ERROR_MESSAGE = "Unsupported visibility provided.";
+    public static final String Id = "RatingNotFound";
+    private static final String ERROR_MESSAGE = "Rating with provided post_id and user_id was not found.";
 
-    public UnsupportedVisibilityException() {
+    public RatingNotFoundException() {
         super(ERROR_MESSAGE);
     }
 
@@ -25,7 +25,7 @@ public class UnsupportedVisibilityException extends RestFromGrpcException {
     @NonNull
     @Override
     public StatusRuntimeException asStatusRuntimeException() {
-        return Status.INVALID_ARGUMENT
+        return Status.NOT_FOUND
                 .withDescription(getEncodedException())
                 .asRuntimeException();
     }
@@ -33,6 +33,6 @@ public class UnsupportedVisibilityException extends RestFromGrpcException {
     @NonNull
     @Override
     public ProblemDetail getProblemDetail() {
-        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, getMessage());
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, getExceptionId());
     }
 }

@@ -7,12 +7,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.lang.NonNull;
 
-public class UnsupportedVisibilityException extends RestFromGrpcException {
+public class UnsupportedRoleException extends RestFromGrpcException {
 
-    public final static String Id = "UnsupportedVisibility";
-    private final static String ERROR_MESSAGE = "Unsupported visibility provided.";
+    public static final String Id = "UnsupportedRole";
+    private static final String ERROR_MESSAGE = "Unsupported role provided.";
 
-    public UnsupportedVisibilityException() {
+    public UnsupportedRoleException() {
         super(ERROR_MESSAGE);
     }
 
