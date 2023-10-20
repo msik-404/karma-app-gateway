@@ -101,7 +101,7 @@ public class PostRedisCache {
         return results.size() == 2 && !(Boolean) results.get(0) && !(Boolean) results.get(1);
     }
 
-    public boolean cacheImage(@NonNull ObjectId postId, byte[] imageData) {
+    public boolean cacheImage(@NonNull ObjectId postId, @NonNull byte[] imageData) {
 
         Object results = redisTemplate.execute((RedisCallback<Object>) connection ->
                 connection.stringCommands().set(
