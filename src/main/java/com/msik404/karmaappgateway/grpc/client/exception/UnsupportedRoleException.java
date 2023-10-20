@@ -33,6 +33,6 @@ public class UnsupportedRoleException extends RestFromGrpcException {
     @NonNull
     @Override
     public ProblemDetail getProblemDetail() {
-        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, getMessage());
+        return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, getMessage());
     }
 }
