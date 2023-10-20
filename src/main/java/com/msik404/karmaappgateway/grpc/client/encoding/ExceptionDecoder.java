@@ -31,7 +31,7 @@ public class ExceptionDecoder {
         if (matcher.find()) {
             return matcher.group(1);
         } else {
-            throw new BadEncodingException();
+            throw new BadEncodingException(encodedException);
         }
     }
 
@@ -56,7 +56,7 @@ public class ExceptionDecoder {
             case DuplicateUsernameException.Id -> new DuplicateUsernameException();
             case DuplicateUnexpectedFieldException.Id -> new DuplicateUnexpectedFieldException();
 
-            default -> throw new BadEncodingException();
+            default -> throw new BadEncodingException(exceptionId);
         };
     }
 
