@@ -54,6 +54,8 @@ public class PostRedisCache {
      */
     public void reinitializeCache(@NonNull Collection<PostDto> posts) {
 
+        assert !posts.isEmpty();
+
         Set<StringRedisConnection.StringTuple> tuplesToAdd = new HashSet<>(posts.size());
         for (PostDto post : posts) {
             var tuple = new DefaultStringTuple(getPostKey(post.getId()), (double) post.getKarmaScore());

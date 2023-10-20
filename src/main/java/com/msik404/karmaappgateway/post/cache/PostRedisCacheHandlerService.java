@@ -40,7 +40,9 @@ public class PostRedisCacheHandlerService {
                 List.of(Visibility.ACTIVE)
         );
 
-        cache.reinitializeCache(newValuesForCache);
+        if (!newValuesForCache.isEmpty()) {
+            cache.reinitializeCache(newValuesForCache);
+        }
 
         return newValuesForCache;
     }
