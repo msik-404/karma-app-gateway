@@ -5,6 +5,7 @@ import java.util.regex.Pattern;
 
 import com.msik404.karmaappgateway.exception.RestFromGrpcException;
 import com.msik404.karmaappgateway.grpc.client.encoding.exception.BadEncodingException;
+import com.msik404.karmaappgateway.grpc.client.exception.FailedValidationException;
 import com.msik404.karmaappgateway.grpc.client.exception.UnsupportedRoleException;
 import com.msik404.karmaappgateway.grpc.client.exception.UnsupportedVisibilityException;
 import com.msik404.karmaappgateway.post.exception.FileProcessingException;
@@ -37,7 +38,8 @@ public class ExceptionDecoder {
 
     @NonNull
     private static RestFromGrpcException decodeExceptionImpl(
-            @NonNull String exceptionId
+            @NonNull String exceptionId,
+            @NonNull String encodedException
     ) throws BadEncodingException {
 
         return switch (exceptionId) {
@@ -56,7 +58,9 @@ public class ExceptionDecoder {
             case DuplicateUsernameException.Id -> new DuplicateUsernameException();
             case DuplicateUnexpectedFieldException.Id -> new DuplicateUnexpectedFieldException();
 
-            default -> throw new BadEncodingException(exceptionId);
+            case FailedValidationException.Id -> new FailedValidationException(encodedException);
+
+            default -> throw new BadEncodingException(encodedException);
         };
     }
 
@@ -67,7 +71,7 @@ public class ExceptionDecoder {
 
         String exceptionId = decodeExceptionId(encodedException);
 
-        return decodeExceptionImpl(exceptionId);
+        return decodeExceptionImpl(exceptionId, encodedException);
     }
 
 }
