@@ -74,12 +74,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
             filterChain.doFilter(request, response);
 
+        } catch (UserNotFoundException ex) {
+            throw new UsernameNotFoundException(ex.getMessage());
         } catch (ExpiredJwtException ex) {
             throw new CredentialsExpiredException(ex.getMessage());
         } catch (JwtException | IllegalArgumentException ex) {
             throw new BadCredentialsException(ex.getMessage());
-        } catch (UserNotFoundException ex) {
-            throw new UsernameNotFoundException(ex.getMessage());
         }
     }
 
