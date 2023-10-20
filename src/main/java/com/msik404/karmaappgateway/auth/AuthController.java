@@ -3,8 +3,9 @@ package com.msik404.karmaappgateway.auth;
 import com.msik404.karmaappgateway.auth.dto.LoginRequest;
 import com.msik404.karmaappgateway.auth.dto.LoginResponse;
 import com.msik404.karmaappgateway.auth.dto.RegisterRequest;
-import com.msik404.karmaappgateway.exception.RestFromGrpcException;
-import com.msik404.karmaappgateway.grpc.client.exception.InternalRestException;
+import com.msik404.karmaappgateway.user.exception.DuplicateEmailException;
+import com.msik404.karmaappgateway.user.exception.DuplicateUnexpectedFieldException;
+import com.msik404.karmaappgateway.user.exception.DuplicateUsernameException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<Void> register(
             @Valid @RequestBody RegisterRequest request
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws DuplicateUsernameException, DuplicateEmailException, DuplicateUnexpectedFieldException {
 
         authenticationService.register(request);
 

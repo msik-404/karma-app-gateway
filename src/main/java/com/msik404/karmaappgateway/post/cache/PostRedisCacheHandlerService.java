@@ -4,9 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import com.msik404.karmaappgateway.exception.RestFromGrpcException;
 import com.msik404.karmaappgateway.grpc.client.GrpcService;
-import com.msik404.karmaappgateway.grpc.client.exception.InternalRestException;
 import com.msik404.karmaappgateway.post.comparator.BasicComparablePost;
 import com.msik404.karmaappgateway.post.comparator.PostComparator;
 import com.msik404.karmaappgateway.post.dto.PostDto;
@@ -14,6 +12,7 @@ import com.msik404.karmaappgateway.post.dto.PostWithImageDataDto;
 import com.msik404.karmaappgateway.post.dto.ScrollPosition;
 import com.msik404.karmaappgateway.post.dto.Visibility;
 import com.msik404.karmaappgateway.post.exception.PostNotFoundException;
+import com.msik404.karmaappgateway.user.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.lang.NonNull;
@@ -34,7 +33,7 @@ public class PostRedisCacheHandlerService {
     }
 
     @NonNull
-    public List<PostDto> updateCache() throws RestFromGrpcException, InternalRestException {
+    public List<PostDto> updateCache() {
 
         List<PostDto> newValuesForCache = grpcService.findTopNPosts(
                 CACHED_POSTS_AMOUNT,
@@ -49,8 +48,7 @@ public class PostRedisCacheHandlerService {
     @NonNull
     public List<PostDto> findTopNHandler(
             int size,
-            @NonNull List<Visibility> visibilities
-    ) throws RestFromGrpcException, InternalRestException {
+            @NonNull List<Visibility> visibilities) {
 
         List<PostDto> results;
 
@@ -90,8 +88,7 @@ public class PostRedisCacheHandlerService {
     public List<PostDto> findNextNHandler(
             int size,
             @NonNull List<Visibility> visibilities,
-            @NonNull ScrollPosition scrollPosition
-    ) throws RestFromGrpcException, InternalRestException {
+            @NonNull ScrollPosition scrollPosition) {
 
         List<PostDto> results;
 
@@ -132,7 +129,7 @@ public class PostRedisCacheHandlerService {
 
     public boolean loadPostDataToCacheIfKarmaScoreIsHighEnough(
             @NonNull ObjectId postId
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws UserNotFoundException {
 
         try {
             PostWithImageDataDto post = grpcService.findByPostId(postId);

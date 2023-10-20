@@ -1,8 +1,7 @@
 package com.msik404.karmaappgateway.user;
 
-import com.msik404.karmaappgateway.exception.RestFromGrpcException;
 import com.msik404.karmaappgateway.grpc.client.GrpcService;
-import com.msik404.karmaappgateway.grpc.client.exception.InternalRestException;
+import com.msik404.karmaappgateway.user.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,7 +17,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(
             @NonNull String email
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws UserNotFoundException {
 
         return service.findUserDetails(email);
     }

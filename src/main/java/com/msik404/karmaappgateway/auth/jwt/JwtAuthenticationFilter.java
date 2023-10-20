@@ -3,10 +3,9 @@ package com.msik404.karmaappgateway.auth.jwt;
 import java.io.IOException;
 import java.util.List;
 
-import com.msik404.karmaappgateway.exception.RestFromGrpcException;
 import com.msik404.karmaappgateway.grpc.client.GrpcService;
-import com.msik404.karmaappgateway.grpc.client.exception.InternalRestException;
 import com.msik404.karmaappgateway.user.Role;
+import com.msik404.karmaappgateway.user.exception.UserNotFoundException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -38,8 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
-    ) throws ServletException, IOException, JwtException, IllegalArgumentException, RestFromGrpcException,
-            InternalRestException {
+    ) throws ServletException, IOException, JwtException, IllegalArgumentException, UserNotFoundException {
 
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith(TOKEN_PREFIX)) {

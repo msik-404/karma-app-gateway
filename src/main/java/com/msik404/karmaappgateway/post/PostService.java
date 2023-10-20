@@ -4,15 +4,16 @@ import java.io.IOException;
 import java.util.List;
 import java.util.OptionalDouble;
 
-import com.msik404.karmaappgateway.exception.RestFromGrpcException;
 import com.msik404.karmaappgateway.grpc.client.GrpcService;
-import com.msik404.karmaappgateway.grpc.client.exception.InternalRestException;
 import com.msik404.karmaappgateway.post.cache.PostRedisCache;
 import com.msik404.karmaappgateway.post.cache.PostRedisCacheHandlerService;
 import com.msik404.karmaappgateway.post.dto.*;
 import com.msik404.karmaappgateway.post.exception.FileProcessingException;
 import com.msik404.karmaappgateway.post.exception.ImageNotFoundException;
+import com.msik404.karmaappgateway.post.exception.PostNotFoundException;
+import com.msik404.karmaappgateway.post.exception.RatingNotFoundException;
 import com.msik404.karmaappgateway.user.Role;
+import com.msik404.karmaappgateway.user.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.lang.NonNull;
@@ -38,7 +39,7 @@ public class PostService {
             @NonNull List<Visibility> visibilities,
             @Nullable ScrollPosition scrollPosition,
             @Nullable String creatorUsername
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws UserNotFoundException {
 
         List<PostDto> results;
 
@@ -65,7 +66,7 @@ public class PostService {
             int size,
             @NonNull List<Visibility> visibilities,
             @Nullable ScrollPosition scrollPosition
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws UserNotFoundException {
 
         // controller authentication objects come from filter and are UsernamePasswordAuthenticationToken.
         var authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -88,7 +89,7 @@ public class PostService {
             @NonNull List<Visibility> visibilities,
             @Nullable ScrollPosition scrollPosition,
             @Nullable String creatorUsername
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws UserNotFoundException {
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var clientId = (ObjectId) authentication.getPrincipal();
@@ -117,7 +118,7 @@ public class PostService {
     @NonNull
     public byte[] findImageByPostId(
             @NonNull ObjectId postId
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws ImageNotFoundException {
 
         return cache.getCachedImage(postId).orElseGet(() -> {
             byte[] imageData = grpcService.findImage(postId);
@@ -131,8 +132,7 @@ public class PostService {
 
     public void create(
             @NonNull PostCreationRequest request,
-            @NonNull MultipartFile image
-    ) throws RestFromGrpcException, InternalRestException {
+            @NonNull MultipartFile image) throws FileProcessingException {
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var clientId = (ObjectId) authentication.getPrincipal();
@@ -151,7 +151,7 @@ public class PostService {
     public void rate(
             @NonNull ObjectId postId,
             boolean isNewRatingPositive
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws PostNotFoundException, RatingNotFoundException {
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var clientId = (ObjectId) authentication.getPrincipal();
@@ -170,7 +170,7 @@ public class PostService {
 
     public void unrate(
             @NonNull ObjectId postId
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws PostNotFoundException {
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var clientId = (ObjectId) authentication.getPrincipal();
@@ -190,7 +190,7 @@ public class PostService {
     public void changeVisibility(
             @NonNull ObjectId postId,
             @NonNull Visibility visibility
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws PostNotFoundException {
 
         grpcService.changePostVisibility(postId, visibility);
 
@@ -204,7 +204,7 @@ public class PostService {
     public void changeOwnedPostVisibility(
             @NonNull ObjectId postId,
             @NonNull Visibility visibility
-    ) throws AccessDeniedException, RestFromGrpcException, InternalRestException {
+    ) throws AccessDeniedException, UserNotFoundException, PostNotFoundException {
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var clientId = (ObjectId) authentication.getPrincipal();

@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.msik404.karmaappgateway.exception.RestFromGrpcException;
-import com.msik404.karmaappgateway.grpc.client.exception.InternalRestException;
 import com.msik404.karmaappgateway.post.dto.*;
+import com.msik404.karmaappgateway.post.exception.ImageNotFoundException;
+import com.msik404.karmaappgateway.post.exception.PostNotFoundException;
+import com.msik404.karmaappgateway.post.exception.RatingNotFoundException;
+import com.msik404.karmaappgateway.user.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.hateoas.EntityModel;
@@ -32,7 +34,7 @@ public class PostController {
             @RequestParam(value = "post_id", required = false) ObjectId postId,
             @RequestParam(value = "karma_score", required = false) Long karmaScore,
             @RequestParam(value = "username", required = false) String username
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws UserNotFoundException {
 
         ScrollPosition scrollPosition = null;
         if (postId != null && karmaScore != null) {
@@ -52,7 +54,7 @@ public class PostController {
             @RequestParam(value = "hidden", defaultValue = "false") boolean hidden,
             @RequestParam(value = "post_id", required = false) ObjectId postId,
             @RequestParam(value = "karma_score", required = false) Long karmaScore
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws UserNotFoundException {
 
         List<Visibility> visibilities = createVisibilityList(active, hidden, false);
 
@@ -73,7 +75,7 @@ public class PostController {
             @RequestParam(value = "post_id", required = false) ObjectId postId,
             @RequestParam(value = "karma_score", required = false) Long karmaScore,
             @RequestParam(value = "username", required = false) String username
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws UserNotFoundException {
 
 
         ScrollPosition scrollPosition = null;
@@ -109,7 +111,7 @@ public class PostController {
             @RequestParam(value = "post_id", required = false) ObjectId postId,
             @RequestParam(value = "karma_score", required = false) Long karmaScore,
             @RequestParam(value = "username", required = false) String username
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws UserNotFoundException {
 
         List<Visibility> visibilities = createVisibilityList(active, hidden, false);
 
@@ -132,7 +134,7 @@ public class PostController {
             @RequestParam(value = "post_id", required = false) ObjectId postId,
             @RequestParam(value = "karma_score", required = false) Long karmaScore,
             @RequestParam(value = "username", required = false) String username
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws UserNotFoundException {
 
         List<Visibility> visibilities = createVisibilityList(active, hidden, false);
 
@@ -153,7 +155,7 @@ public class PostController {
             @RequestParam(value = "post_id", required = false) ObjectId postId,
             @RequestParam(value = "karma_score", required = false) Long karmaScore,
             @RequestParam(value = "username", required = false) String username
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws UserNotFoundException {
 
         List<Visibility> visibilities = createVisibilityList(active, hidden, deleted);
 
@@ -177,7 +179,7 @@ public class PostController {
             @RequestParam(value = "post_id", required = false) ObjectId postId,
             @RequestParam(value = "karma_score", required = false) Long karmaScore,
             @RequestParam(value = "username", required = false) String username
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws UserNotFoundException {
 
         List<Visibility> visibilities = createVisibilityList(active, hidden, deleted);
 
@@ -192,7 +194,7 @@ public class PostController {
     @GetMapping("guest/posts/{postId}/image")
     public ResponseEntity<byte[]> findImageById(
             @PathVariable ObjectId postId
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws ImageNotFoundException {
 
         byte[] imageData = postService.findImageByPostId(postId);
         var headers = new HttpHeaders();
@@ -203,8 +205,7 @@ public class PostController {
     @PostMapping("user/posts")
     public ResponseEntity<Void> create(
             @RequestPart("json_data") PostCreationRequest jsonData,
-            @RequestPart("image") MultipartFile image
-    ) throws RestFromGrpcException, InternalRestException {
+            @RequestPart("image") MultipartFile image) {
 
         postService.create(jsonData, image);
         return ResponseEntity.ok(null);
@@ -214,7 +215,7 @@ public class PostController {
     public ResponseEntity<Void> rate(
             @PathVariable ObjectId postId,
             @RequestParam("is_positive") boolean isPositive
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws PostNotFoundException, RatingNotFoundException {
 
         postService.rate(postId, isPositive);
         return ResponseEntity.ok(null);
@@ -223,7 +224,7 @@ public class PostController {
     @PostMapping("user/posts/{postId}/unrate")
     public ResponseEntity<Void> unrate(
             @PathVariable ObjectId postId
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws PostNotFoundException {
 
         postService.unrate(postId);
         return ResponseEntity.ok(null);
@@ -232,7 +233,7 @@ public class PostController {
     @PostMapping("user/posts/{postId}/hide")
     public ResponseEntity<Void> hideByUser(
             @PathVariable ObjectId postId
-    ) throws AccessDeniedException, RestFromGrpcException, InternalRestException {
+    ) throws AccessDeniedException, UserNotFoundException, PostNotFoundException {
 
         postService.changeOwnedPostVisibility(postId, Visibility.HIDDEN);
         return ResponseEntity.ok(null);
@@ -241,7 +242,7 @@ public class PostController {
     @PostMapping("user/posts/{postId}/unhide")
     public ResponseEntity<Void> unhideByUser(
             @PathVariable ObjectId postId
-    ) throws AccessDeniedException, RestFromGrpcException, InternalRestException {
+    ) throws AccessDeniedException, UserNotFoundException, PostNotFoundException {
 
         postService.changeOwnedPostVisibility(postId, Visibility.ACTIVE);
         return ResponseEntity.ok(null);
@@ -250,7 +251,7 @@ public class PostController {
     @PostMapping("mod/posts/{postId}/hide")
     public ResponseEntity<Void> hideByMod(
             @PathVariable ObjectId postId
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws PostNotFoundException {
 
         postService.changeVisibility(postId, Visibility.HIDDEN);
         return ResponseEntity.ok(null);
@@ -259,7 +260,7 @@ public class PostController {
     @PostMapping("user/posts/{postId}/delete")
     public ResponseEntity<Void> deleteByUser(
             @PathVariable ObjectId postId
-    ) throws AccessDeniedException, RestFromGrpcException, InternalRestException {
+    ) throws AccessDeniedException, UserNotFoundException, PostNotFoundException {
 
         postService.changeOwnedPostVisibility(postId, Visibility.DELETED);
         return ResponseEntity.ok(null);
@@ -268,7 +269,7 @@ public class PostController {
     @PostMapping("admin/posts/{postId}/delete")
     public ResponseEntity<Void> deleteByAdmin(
             @PathVariable ObjectId postId
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws PostNotFoundException {
 
         postService.changeVisibility(postId, Visibility.DELETED);
         return ResponseEntity.ok(null);
@@ -277,7 +278,7 @@ public class PostController {
     @PostMapping("admin/posts/{postId}/activate")
     public ResponseEntity<Void> activateByAdmin(
             @PathVariable ObjectId postId
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws PostNotFoundException {
 
         postService.changeVisibility(postId, Visibility.ACTIVE);
         return ResponseEntity.ok(null);

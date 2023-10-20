@@ -5,16 +5,22 @@ import java.util.List;
 
 import com.google.protobuf.ByteString;
 import com.msik404.karmaappgateway.auth.dto.RegisterRequest;
-import com.msik404.karmaappgateway.exception.RestFromGrpcException;
-import com.msik404.karmaappgateway.grpc.client.exception.InternalRestException;
 import com.msik404.karmaappgateway.grpc.client.mapper.MongoObjectIdMapper;
 import com.msik404.karmaappgateway.grpc.client.mapper.RoleMapper;
 import com.msik404.karmaappgateway.grpc.client.mapper.ScrollPositionMapper;
 import com.msik404.karmaappgateway.grpc.client.mapper.VisibilityMapper;
 import com.msik404.karmaappgateway.post.dto.ScrollPosition;
 import com.msik404.karmaappgateway.post.dto.*;
+import com.msik404.karmaappgateway.post.exception.FileProcessingException;
+import com.msik404.karmaappgateway.post.exception.ImageNotFoundException;
+import com.msik404.karmaappgateway.post.exception.PostNotFoundException;
+import com.msik404.karmaappgateway.post.exception.RatingNotFoundException;
 import com.msik404.karmaappgateway.user.Role;
 import com.msik404.karmaappgateway.user.UserDetailsImpl;
+import com.msik404.karmaappgateway.user.exception.DuplicateEmailException;
+import com.msik404.karmaappgateway.user.exception.DuplicateUnexpectedFieldException;
+import com.msik404.karmaappgateway.user.exception.DuplicateUsernameException;
+import com.msik404.karmaappgateway.user.exception.UserNotFoundException;
 import com.msik404.karmaappposts.grpc.*;
 import com.msik404.karmaappusers.grpc.CreateUserRequest;
 import com.msik404.karmaappusers.grpc.CredentialsRequest;
@@ -40,8 +46,7 @@ public class GrpcService {
     @NonNull
     public List<PostDto> findTopNPosts(
             int size,
-            @NonNull Collection<Visibility> visibilities
-    ) throws RestFromGrpcException, InternalRestException {
+            @NonNull Collection<Visibility> visibilities) {
 
         var postsRequest = PostsRequest.newBuilder()
                 .setSize(size)
@@ -55,8 +60,7 @@ public class GrpcService {
     public List<PostDto> findNextNPosts(
             int size,
             @NonNull Collection<Visibility> visibilities,
-            @NonNull ScrollPosition scrollPosition
-    ) throws RestFromGrpcException, InternalRestException {
+            @NonNull ScrollPosition scrollPosition) {
 
         var postsRequest = PostsRequest.newBuilder()
                 .setSize(size)
@@ -72,7 +76,7 @@ public class GrpcService {
             int size,
             @NonNull Collection<Visibility> visibilities,
             @NonNull String creatorUsername
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws UserNotFoundException {
 
         var postsRequest = PostsRequest.newBuilder()
                 .setSize(size)
@@ -92,7 +96,7 @@ public class GrpcService {
             @NonNull Collection<Visibility> visibilities,
             @NonNull ScrollPosition scrollPosition,
             @NonNull String creatorUsername
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws UserNotFoundException {
 
         var postsRequest = PostsRequest.newBuilder()
                 .setSize(size)
@@ -112,7 +116,7 @@ public class GrpcService {
             int size,
             @NonNull Collection<Visibility> visibilities,
             @NonNull ObjectId creatorId
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws UserNotFoundException {
 
         var postsRequest = PostsRequest.newBuilder()
                 .setSize(size)
@@ -133,7 +137,7 @@ public class GrpcService {
             @NonNull Collection<Visibility> visibilities,
             @NonNull ObjectId creatorId,
             @NonNull ScrollPosition scrollPosition
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws UserNotFoundException {
 
         var postsRequest = PostsRequest.newBuilder()
                 .setSize(size)
@@ -152,7 +156,7 @@ public class GrpcService {
     @NonNull
     public PostWithImageDataDto findByPostId(
             @NonNull ObjectId postId
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws PostNotFoundException, UserNotFoundException {
 
         var postRequest = PostRequest.newBuilder()
                 .setPostId(MongoObjectIdMapper.mapToPostsMongoObjectId(postId))
@@ -165,8 +169,7 @@ public class GrpcService {
     public List<PostRatingResponse> findTopNRatings(
             int size,
             @NonNull Collection<Visibility> visibilities,
-            @NonNull ObjectId clientId
-    ) throws RestFromGrpcException, InternalRestException {
+            @NonNull ObjectId clientId) {
 
         var postRequest = PostsRequest.newBuilder()
                 .setSize(size)
@@ -186,8 +189,7 @@ public class GrpcService {
             int size,
             @NonNull Collection<Visibility> visibilities,
             @NonNull ObjectId clientId,
-            @NonNull ScrollPosition scrollPosition
-    ) throws RestFromGrpcException, InternalRestException {
+            @NonNull ScrollPosition scrollPosition) {
 
         var postRequest = PostsRequest.newBuilder()
                 .setSize(size)
@@ -209,7 +211,7 @@ public class GrpcService {
             @NonNull Collection<Visibility> visibilities,
             @NonNull ObjectId clientId,
             @NonNull String creatorUsername
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws UserNotFoundException {
 
         var postRequest = PostsRequest.newBuilder()
                 .setSize(size)
@@ -233,7 +235,7 @@ public class GrpcService {
             @NonNull ObjectId clientId,
             @NonNull ScrollPosition scrollPosition,
             @NonNull String creatorUsername
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws UserNotFoundException {
 
         var postRequest = PostsRequest.newBuilder()
                 .setSize(size)
@@ -254,7 +256,7 @@ public class GrpcService {
     @NonNull
     public byte[] findImage(
             @NonNull ObjectId postId
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws ImageNotFoundException {
 
         var request = ImageRequest.newBuilder()
                 .setPostId(MongoObjectIdMapper.mapToPostsMongoObjectId(postId))
@@ -267,7 +269,7 @@ public class GrpcService {
             @NonNull ObjectId clientId,
             @NonNull PostCreationRequest creationRequest,
             @Nullable byte[] imageData
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws FileProcessingException {
 
         var requestBuilder = CreatePostRequest.newBuilder()
                 .setUserId(MongoObjectId.newBuilder().setHexString(clientId.toHexString()).build())
@@ -285,7 +287,7 @@ public class GrpcService {
             @NonNull ObjectId postId,
             @NonNull ObjectId clientId,
             boolean isPositive
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws PostNotFoundException, RatingNotFoundException {
 
         var request = RatePostRequest.newBuilder()
                 .setPostId(MongoObjectIdMapper.mapToPostsMongoObjectId(postId))
@@ -299,7 +301,7 @@ public class GrpcService {
     public int unratePost(
             @NonNull ObjectId postId,
             @NonNull ObjectId clientId
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws PostNotFoundException {
 
         var request = UnratePostRequest.newBuilder()
                 .setPostId(MongoObjectIdMapper.mapToPostsMongoObjectId(postId))
@@ -312,7 +314,7 @@ public class GrpcService {
     public void changePostVisibility(
             @NonNull ObjectId postId,
             @NonNull Visibility visibility
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws PostNotFoundException {
 
         var request = ChangePostVisibilityRequest.newBuilder()
                 .setPostId(MongoObjectIdMapper.mapToPostsMongoObjectId(postId))
@@ -325,7 +327,7 @@ public class GrpcService {
     @NonNull
     public String findPostCreatorId(
             @NonNull ObjectId postId
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws PostNotFoundException {
 
         var request = PostCreatorIdRequest.newBuilder()
                 .setPostId(MongoObjectIdMapper.mapToPostsMongoObjectId(postId))
@@ -337,7 +339,7 @@ public class GrpcService {
     @NonNull
     public Role findUserRole(
             @NonNull ObjectId userId
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws UserNotFoundException {
 
         var request = UserRoleRequest.newBuilder()
                 .setUserId(MongoObjectIdMapper.mapToUsersMongoObjectId(userId))
@@ -349,7 +351,7 @@ public class GrpcService {
     @NonNull
     public UserDetailsImpl findUserDetails(
             @NonNull String email
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws UserNotFoundException {
 
         var request = CredentialsRequest.newBuilder()
                 .setEmail(email)
@@ -360,7 +362,7 @@ public class GrpcService {
 
     public void registerUser(
             @NonNull RegisterRequest registerRequest
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws DuplicateUsernameException, DuplicateEmailException, DuplicateUnexpectedFieldException {
 
         var requestBuilder = CreateUserRequest.newBuilder()
                 .setEmail(registerRequest.email())

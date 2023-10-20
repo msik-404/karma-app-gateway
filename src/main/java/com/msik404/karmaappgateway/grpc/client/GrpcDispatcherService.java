@@ -7,15 +7,24 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.msik404.karmaappgateway.exception.RestFromGrpcException;
 import com.msik404.karmaappgateway.grpc.client.encoding.ExceptionDecoder;
 import com.msik404.karmaappgateway.grpc.client.encoding.exception.BadEncodingException;
-import com.msik404.karmaappgateway.grpc.client.exception.InternalRestException;
 import com.msik404.karmaappgateway.grpc.client.exception.InternalServerErrorException;
+import com.msik404.karmaappgateway.grpc.client.exception.UnsupportedRoleException;
+import com.msik404.karmaappgateway.grpc.client.exception.UnsupportedVisibilityException;
 import com.msik404.karmaappgateway.grpc.client.mapper.*;
 import com.msik404.karmaappgateway.grpc.client.zipper.PostDtoZipper;
 import com.msik404.karmaappgateway.post.dto.PostDto;
 import com.msik404.karmaappgateway.post.dto.PostRatingResponse;
 import com.msik404.karmaappgateway.post.dto.PostWithImageDataDto;
+import com.msik404.karmaappgateway.post.exception.FileProcessingException;
+import com.msik404.karmaappgateway.post.exception.ImageNotFoundException;
+import com.msik404.karmaappgateway.post.exception.PostNotFoundException;
+import com.msik404.karmaappgateway.post.exception.RatingNotFoundException;
 import com.msik404.karmaappgateway.user.Role;
 import com.msik404.karmaappgateway.user.UserDetailsImpl;
+import com.msik404.karmaappgateway.user.exception.DuplicateEmailException;
+import com.msik404.karmaappgateway.user.exception.DuplicateUnexpectedFieldException;
+import com.msik404.karmaappgateway.user.exception.DuplicateUsernameException;
+import com.msik404.karmaappgateway.user.exception.UserNotFoundException;
 import com.msik404.karmaappposts.grpc.*;
 import com.msik404.karmaappusers.grpc.MongoObjectId;
 import com.msik404.karmaappusers.grpc.*;
@@ -94,7 +103,7 @@ public class GrpcDispatcherService {
     @NonNull
     public List<PostDto> fetchPostsWithUsernames(
             @NonNull PostsRequest request
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws InternalServerErrorException, BadEncodingException, UnsupportedVisibilityException {
 
         try {
             // get posts by request from posts microservice
@@ -114,7 +123,7 @@ public class GrpcDispatcherService {
     public List<PostDto> fetchPostsWithUsernames(
             @NonNull PostsRequest postsRequest,
             @NonNull UserIdRequest creatorIdRequest
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws InternalServerErrorException, BadEncodingException, UnsupportedVisibilityException, UserNotFoundException {
 
         try {
             // get userId by username from users microservice
@@ -140,7 +149,7 @@ public class GrpcDispatcherService {
     @NonNull
     public List<PostDto> fetchPostsWithUsernames(
             @NonNull PostsWithCreatorIdRequest request
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws InternalServerErrorException, BadEncodingException, UnsupportedVisibilityException, UserNotFoundException {
 
         try {
             // async request for posts to posts microservice
@@ -172,7 +181,7 @@ public class GrpcDispatcherService {
     @NonNull
     public PostWithImageDataDto fetchPostWithImage(
             @NonNull PostRequest postRequest
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws InternalServerErrorException, BadEncodingException, PostNotFoundException, UserNotFoundException {
 
         try {
             PostWithImageData post = postsStub.findPostWithImageData(postRequest).get();
@@ -195,7 +204,7 @@ public class GrpcDispatcherService {
     @NonNull
     public List<PostRatingResponse> fetchRatings(
             @NonNull PostRatingsRequest request
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws InternalServerErrorException, BadEncodingException, UnsupportedVisibilityException {
 
         try {
             PostRatingsResponse response = postsStub.findPostRatings(request).get();
@@ -213,7 +222,7 @@ public class GrpcDispatcherService {
     public List<PostRatingResponse> fetchRatings(
             @NonNull PostRatingsRequest ratingsRequest,
             @NonNull UserIdRequest creatorIdRequest
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws InternalServerErrorException, BadEncodingException, UnsupportedVisibilityException, UserNotFoundException {
 
         try {
             MongoObjectId creatorIdResponse = usersStub.findUserId(creatorIdRequest).get();
@@ -237,7 +246,7 @@ public class GrpcDispatcherService {
     @NonNull
     public byte[] fetchImage(
             @NonNull ImageRequest request
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws InternalServerErrorException, BadEncodingException, ImageNotFoundException {
 
         try {
             ImageResponse imageResponse = postsStub.findImage(request).get();
@@ -253,7 +262,7 @@ public class GrpcDispatcherService {
 
     public void createPost(
             @NonNull CreatePostRequest request
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws InternalServerErrorException, BadEncodingException, FileProcessingException {
 
         try {
             postsStub.createPost(request).get();
@@ -266,7 +275,7 @@ public class GrpcDispatcherService {
 
     public int ratePost(
             @NonNull RatePostRequest request
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws InternalServerErrorException, BadEncodingException, PostNotFoundException, RatingNotFoundException {
 
         try {
             ChangedRatingResponse response = postsStub.ratePost(request).get();
@@ -282,7 +291,7 @@ public class GrpcDispatcherService {
 
     public int unratePost(
             @NonNull UnratePostRequest request
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws InternalServerErrorException, BadEncodingException, PostNotFoundException {
 
         try {
             ChangedRatingResponse response = postsStub.unratePost(request).get();
@@ -298,7 +307,7 @@ public class GrpcDispatcherService {
 
     public void changePostVisibility(
             @NonNull ChangePostVisibilityRequest request
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws InternalServerErrorException, BadEncodingException, UnsupportedVisibilityException, PostNotFoundException {
 
         try {
             postsStub.changePostVisibility(request).get();
@@ -312,7 +321,7 @@ public class GrpcDispatcherService {
     @NonNull
     public String fetchPostCreatorId(
             @NonNull PostCreatorIdRequest request
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws InternalServerErrorException, BadEncodingException, PostNotFoundException {
 
         try {
             PostCreatorIdResponse response = postsStub.findPostCreatorId(request).get();
@@ -329,7 +338,7 @@ public class GrpcDispatcherService {
     @NonNull
     public Role fetchUserRole(
             @NonNull UserRoleRequest request
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws InternalServerErrorException, BadEncodingException, UserNotFoundException {
 
         try {
             UserRoleResponse response = usersStub.findUserRole(request).get();
@@ -346,7 +355,7 @@ public class GrpcDispatcherService {
     @NonNull
     public UserDetailsImpl fetchUserCredentials(
             @NonNull CredentialsRequest request
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws InternalServerErrorException, BadEncodingException, UnsupportedRoleException, UserNotFoundException {
 
         try {
             CredentialsResponse response = usersStub.findCredentials(request).get();
@@ -362,7 +371,8 @@ public class GrpcDispatcherService {
 
     public void createUser(
             @NonNull CreateUserRequest request
-    ) throws RestFromGrpcException, InternalRestException {
+    ) throws InternalServerErrorException, BadEncodingException, UnsupportedRoleException, DuplicateUsernameException,
+            DuplicateEmailException, DuplicateUnexpectedFieldException {
 
         try {
             usersStub.createUser(request).get();
