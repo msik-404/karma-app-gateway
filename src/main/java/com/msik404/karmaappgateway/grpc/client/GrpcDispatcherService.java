@@ -109,6 +109,9 @@ public class GrpcDispatcherService {
             // get posts by request from posts microservice
             PostsResponse postsResponse = postsStub.findPosts(request).get();
             List<Post> posts = postsResponse.getPostsList();
+            if (posts.isEmpty()) {
+                return List.of();
+            }
 
             return loadUsernames(posts);
 
@@ -136,8 +139,12 @@ public class GrpcDispatcherService {
 
             // get posts by PostsRequest and with given creatorId equal to userId
             PostsResponse response = postsStub.findPostsWithCreatorId(postsWithCreatorIdRequest).get();
+            List<Post> posts = response.getPostsList();
+            if (posts.isEmpty()) {
+                return List.of();
+            }
 
-            return PostDtoZipper.zipIntoPostsWithUsernames(response.getPostsList(), creatorIdRequest.getUsername());
+            return PostDtoZipper.zipIntoPostsWithUsernames(posts, creatorIdRequest.getUsername());
 
         } catch (InterruptedException ex) {
             throw new InternalServerErrorException(ex.getMessage());
@@ -164,10 +171,18 @@ public class GrpcDispatcherService {
 
             // wait for responses
             PostsResponse postsResponse = postsResponseFuture.get();
+
+            // if empty return and cancel username request
+            List<Post> posts = postsResponse.getPostsList();
+            if (posts.isEmpty()) {
+                usernameResponseFuture.cancel(true);
+                return List.of();
+            }
+
             UsernameResponse usernameResponse = usernameResponseFuture.get();
 
             return PostDtoZipper.zipIntoPostsWithUsernames(
-                    postsResponse.getPostsList(),
+                    posts,
                     usernameResponse.getUsername()
             );
 
