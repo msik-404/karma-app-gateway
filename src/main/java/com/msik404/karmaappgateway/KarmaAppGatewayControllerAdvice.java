@@ -1,7 +1,7 @@
 package com.msik404.karmaappgateway;
 
 import com.msik404.karmaappgateway.exception.RestFromGrpcException;
-import com.msik404.karmaappgateway.grpc.client.exception.InternalRestException;
+import com.msik404.karmaappgateway.grpc.client.exception.AbstractRestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.core.AuthenticationException;
@@ -22,8 +22,8 @@ public class KarmaAppGatewayControllerAdvice extends ResponseEntityExceptionHand
         return ex.getProblemDetail();
     }
 
-    @ExceptionHandler(InternalRestException.class)
-    public ProblemDetail internalRestException(InternalRestException ex) {
+    @ExceptionHandler(AbstractRestException.class)
+    public ProblemDetail abstractRestException(AbstractRestException ex) {
         return ex.getProblemDetail();
     }
 
