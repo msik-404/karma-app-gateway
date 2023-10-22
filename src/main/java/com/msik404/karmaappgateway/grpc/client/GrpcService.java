@@ -5,10 +5,8 @@ import java.util.List;
 
 import com.google.protobuf.ByteString;
 import com.msik404.karmaappgateway.auth.dto.RegisterRequest;
-import com.msik404.karmaappgateway.grpc.client.mapper.MongoObjectIdMapper;
-import com.msik404.karmaappgateway.grpc.client.mapper.RoleMapper;
-import com.msik404.karmaappgateway.grpc.client.mapper.ScrollPositionMapper;
-import com.msik404.karmaappgateway.grpc.client.mapper.VisibilityMapper;
+import com.msik404.karmaappgateway.grpc.client.exception.UnsupportedRoleException;
+import com.msik404.karmaappgateway.grpc.client.mapper.*;
 import com.msik404.karmaappgateway.post.dto.ScrollPosition;
 import com.msik404.karmaappgateway.post.dto.*;
 import com.msik404.karmaappgateway.post.exception.FileProcessingException;
@@ -17,6 +15,8 @@ import com.msik404.karmaappgateway.post.exception.PostNotFoundException;
 import com.msik404.karmaappgateway.post.exception.RatingNotFoundException;
 import com.msik404.karmaappgateway.user.Role;
 import com.msik404.karmaappgateway.user.UserDetailsImpl;
+import com.msik404.karmaappgateway.user.dto.UserUpdateRequestWithAdminPrivilege;
+import com.msik404.karmaappgateway.user.dto.UserUpdateRequestWithUserPrivilege;
 import com.msik404.karmaappgateway.user.exception.DuplicateEmailException;
 import com.msik404.karmaappgateway.user.exception.DuplicateUnexpectedFieldException;
 import com.msik404.karmaappgateway.user.exception.DuplicateUsernameException;
@@ -378,6 +378,29 @@ public class GrpcService {
         }
 
         dispatcher.createUser(requestBuilder.build());
+    }
+
+    public void updateUserWithUserPrivilege(
+            @NonNull ObjectId userId,
+            @NonNull UserUpdateRequestWithUserPrivilege updateRequest
+    ) throws DuplicateUsernameException, DuplicateEmailException, DuplicateUnexpectedFieldException {
+
+        var optionalRequest = UserUpdateMapper.map(userId, updateRequest);
+
+        // if nothing was in the updateRequest, then don't send empty request to microservice
+        optionalRequest.ifPresent(dispatcher::updateUser);
+    }
+
+    public void updateUserWithAdminPrivilege(
+            @NonNull ObjectId userId,
+            @NonNull UserUpdateRequestWithAdminPrivilege updateRequest
+    ) throws UnsupportedRoleException, DuplicateUsernameException, DuplicateEmailException,
+            DuplicateUnexpectedFieldException {
+
+        var optionalRequest = UserUpdateMapper.map(userId, updateRequest);
+
+        // if nothing was in the updateRequest, then don't send empty request to microservice
+        optionalRequest.ifPresent(dispatcher::updateUser);
     }
 
 }
