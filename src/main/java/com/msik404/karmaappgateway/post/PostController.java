@@ -9,6 +9,7 @@ import com.msik404.karmaappgateway.post.exception.ImageNotFoundException;
 import com.msik404.karmaappgateway.post.exception.PostNotFoundException;
 import com.msik404.karmaappgateway.post.exception.RatingNotFoundException;
 import com.msik404.karmaappgateway.user.exception.UserNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.hateoas.EntityModel;
@@ -204,7 +205,7 @@ public class PostController {
 
     @PostMapping("user/posts")
     public ResponseEntity<Void> create(
-            @RequestPart("json_data") PostCreationRequest jsonData,
+            @Valid @RequestPart("json_data") PostCreationRequest jsonData,
             @RequestPart("image") MultipartFile image) {
 
         postService.create(jsonData, image);
@@ -248,6 +249,7 @@ public class PostController {
         return ResponseEntity.ok(null);
     }
 
+    // todo: this is a little bit stupid because post creator can unhide his post.
     @PostMapping("mod/posts/{postId}/hide")
     public ResponseEntity<Void> hideByMod(
             @PathVariable ObjectId postId
