@@ -10,36 +10,21 @@ public class VisibilityMapper {
     @NonNull
     public static Visibility map(@NonNull PostVisibility visibility) throws UnsupportedVisibilityException {
 
-        switch (visibility) {
-            case VIS_ACTIVE -> {
-                return Visibility.ACTIVE;
-            }
-            case VIS_HIDDEN -> {
-                return Visibility.HIDDEN;
-            }
-            case VIS_DELETED -> {
-                return Visibility.DELETED;
-            }
+        return switch (visibility) {
+            case VIS_ACTIVE -> Visibility.ACTIVE;
+            case VIS_HIDDEN -> Visibility.HIDDEN;
+            case VIS_DELETED -> Visibility.DELETED;
             default -> throw new UnsupportedVisibilityException();
-        }
+        };
     }
 
     @NonNull
     public static PostVisibility map(@NonNull Visibility visibility) {
 
-        switch (visibility) {
-            case ACTIVE -> {
-                return PostVisibility.VIS_ACTIVE;
-            }
-            case HIDDEN -> {
-                return PostVisibility.VIS_HIDDEN;
-            }
-            case DELETED -> {
-                return PostVisibility.VIS_DELETED;
-            }
-            default -> {
-                return PostVisibility.UNRECOGNIZED;
-            }
-        }
+        return switch (visibility) {
+            case ACTIVE -> PostVisibility.VIS_ACTIVE;
+            case HIDDEN -> PostVisibility.VIS_HIDDEN;
+            case DELETED -> PostVisibility.VIS_DELETED;
+        };
     }
 }
