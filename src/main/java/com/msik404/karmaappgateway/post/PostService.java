@@ -201,7 +201,9 @@ public class PostService {
         if (!isAdmin) {
             Visibility persistedVisibility = grpcService.findVisibility(postId);
             if (persistedVisibility.equals(Visibility.DELETED)) {
-                throw new AccessDeniedException("Access denied. You must be admin to change deleted post status to hidden status.");
+                throw new AccessDeniedException(
+                        "Access denied. You must be admin to change deleted post status to hidden status."
+                );
             }
         }
 
