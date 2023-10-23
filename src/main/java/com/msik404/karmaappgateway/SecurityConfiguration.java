@@ -25,7 +25,6 @@ public class SecurityConfiguration {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final DelegatedAuthenticationEntryPoint entryPoint;
 
-    @NonNull
     @Bean
     public static RoleHierarchy roleHierarchy() {
 
@@ -34,7 +33,6 @@ public class SecurityConfiguration {
         return hierarchy;
     }
 
-    @NonNull
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 

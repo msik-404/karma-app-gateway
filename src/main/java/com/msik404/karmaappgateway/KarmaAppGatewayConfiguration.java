@@ -17,13 +17,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class KarmaAppGatewayConfiguration implements WebMvcConfigurer {
 
 
-    @NonNull
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    @NonNull
     @Bean
     public AuthenticationProvider authenticationProvider(UserDetailsServiceImpl userDetailsService) {
 
@@ -32,7 +30,6 @@ public class KarmaAppGatewayConfiguration implements WebMvcConfigurer {
         return authProvider;
     }
 
-    @NonNull
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
 
