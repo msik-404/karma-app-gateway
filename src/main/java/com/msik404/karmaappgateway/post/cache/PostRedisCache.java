@@ -114,6 +114,10 @@ public class PostRedisCache {
         return Boolean.TRUE.equals(results);
     }
 
+    /**
+     * @param postId Id of post whose image is requested.
+     * @return Optional of byte array with image data, Optional empty if image is not found.
+     */
     @NonNull
     public Optional<byte[]> getCachedImage(@NonNull ObjectId postId) {
 
@@ -152,19 +156,30 @@ public class PostRedisCache {
         return results;
     }
 
+    /**
+     * @param size Requested amount of posts.
+     * @return Optional of List of PostDto objects, this list has exactly size elements, Optional empty if not enough
+     * posts are in cache. If two scores of posts are the same, the one with higher lexicographical order is first.
+     */
     @NonNull
     public Optional<List<PostDto>> findTopNCached(int size) {
 
         Set<ZSetOperations.TypedTuple<String>> postIdKeySetWithScores = redisTemplate.opsForZSet()
                 .reverseRangeWithScores(KARMA_SCORE_ZSET_KEY, 0, size - 1);
 
-        if (postIdKeySetWithScores == null || postIdKeySetWithScores.size() != size) {
+        // opsForZSet().reverseRangeWithScores() cannot be null because it only if used can in transaction|pipeline.
+        if (postIdKeySetWithScores.size() != size) {
             return Optional.empty();
         }
-
         return Optional.of(findCachedByZSet(postIdKeySetWithScores));
     }
 
+    /**
+     * @param size Requested amount of posts.
+     * @param karmaScore score of last received post.
+     * @return Optional of List of PostDto objects, this list has exactly size elements, Optional empty if not enough
+     * posts are in cache. If two scores of posts are the same, the one with higher lexicographical order is first.
+     */
     @NonNull
     public Optional<List<PostDto>> findNextNCached(int size, long karmaScore) {
 
@@ -174,31 +189,38 @@ public class PostRedisCache {
                 .reverseRangeByScoreWithScores(
                         KARMA_SCORE_ZSET_KEY, Double.NEGATIVE_INFINITY, karmaScore, 1, size);
 
-        if (postIdKeySetWithScores == null || postIdKeySetWithScores.size() != size) {
+        // opsForZset().reverseRangeByScoreWithScores() cannot be null because it only can if used in transaction|pipeline.
+        if (postIdKeySetWithScores.size() != size) {
             return Optional.empty();
         }
-
         return Optional.of(findCachedByZSet(postIdKeySetWithScores));
     }
 
+    /**
+     * @param postId Id of post whose score is being updated.
+     * @param delta score delta to be added to cached value.
+     * @return Optional of new score if post was cached, Optional empty if post wasn't cached.
+     */
     @NonNull
     public OptionalDouble updateKarmaScoreIfPresent(@NonNull ObjectId postId, double delta) {
 
         ZSetOperations<String, String> zSetOps = redisTemplate.opsForZSet();
         String postIdKey = getPostKey(postId);
 
+        // If postIdKey does not exist return Optional empty.
         if (zSetOps.score(KARMA_SCORE_ZSET_KEY, postIdKey) == null) {
             return OptionalDouble.empty();
         }
 
+        // opsForZset().incrementScore() cannot be null because it only can if used in transaction|pipeline.
         Double newScore = zSetOps.incrementScore(KARMA_SCORE_ZSET_KEY, postIdKey, delta);
-
-        if (newScore == null) {
-            return OptionalDouble.empty();
-        }
         return OptionalDouble.of(newScore);
     }
 
+    /**
+     * @param postId Id of post which will be deleted.
+     * @return true if post was deleted, false if not.
+     */
     public boolean deletePostFromCache(@NonNull ObjectId postId) {
 
         String postIdKey = getPostKey(postId);
@@ -216,24 +238,40 @@ public class PostRedisCache {
         return results.size() == 3 && (Long) results.get(0) == 1 && (Long) results.get(1) == 1;
     }
 
+    /**
+     * @return Amount of keys in ZSet which should be the same as amount of posts cached.
+     */
     @NonNull
-    public Optional<Boolean> isKarmaScoreGreaterThanLowestScoreInZSet(long karmaScore) {
+    public long getZSetSize() {
+        // opsForZset().size() cannot be null because it only can if used in transaction|pipeline.
+        return redisTemplate.opsForZSet().size(KARMA_SCORE_ZSET_KEY);
+    }
+
+    /**
+     * @param karmaScore score of post which is being tested.
+     * @return true if ZSet is empty or score is high enough, false if it's too small.
+     */
+    @NonNull
+    public boolean isKarmaScoreGreaterThanLowestScoreInZSet(long karmaScore) {
 
         Set<ZSetOperations.TypedTuple<String>> lowestScorePostIdWithScore = redisTemplate.opsForZSet()
                 .rangeWithScores(KARMA_SCORE_ZSET_KEY, 0, 0);
 
-        if (lowestScorePostIdWithScore == null || lowestScorePostIdWithScore.size() != 1) {
-            return Optional.empty();
+        // opsForZSet().rangeWithScores() cannot be null because it only can if used in transaction|pipeline.
+        if (lowestScorePostIdWithScore.size() != 1) {
+            return true; // when ZSet is empty
         }
 
+        // lowestScore cannot be null because I check for size() being equal to one.
         Double lowestScore = lowestScorePostIdWithScore.iterator().next().getScore();
-        if (lowestScore == null) {
-            return Optional.empty();
-        }
-
-        return Optional.of(lowestScore < karmaScore);
+        return lowestScore < karmaScore;
     }
 
+    /**
+     * @param post post contents to be cached.
+     * @param imageData optional image data to be cached.
+     * @return true if post was cached.
+     */
     public boolean insertPost(@NonNull PostDto post, @Nullable byte[] imageData) {
 
         String serializedPost = serialize(post);

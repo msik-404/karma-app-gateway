@@ -114,15 +114,10 @@ public class PostRedisCacheHandlerService {
 
     public boolean loadToCacheIfKarmaScoreIsHighEnough(@NonNull PostWithImageDataDto post) {
 
-        Optional<Boolean> optionalIsHighEnough = cache.isKarmaScoreGreaterThanLowestScoreInZSet(
+        boolean isAccepted = cache.isKarmaScoreGreaterThanLowestScoreInZSet(
                 post.postDto().getKarmaScore());
 
-        if (optionalIsHighEnough.isEmpty()) {
-            return false;
-        }
-
-        boolean isHighEnough = optionalIsHighEnough.get();
-        if (!isHighEnough) {
+        if (!isAccepted) {
             return false;
         }
 

@@ -1,9 +1,6 @@
-package com.msik404.karmaappgateway.cache;
+package com.msik404.karmaappgateway.post.cache;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.OptionalDouble;
+import java.util.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.msik404.karmaappgateway.RedisConfiguration;
@@ -279,45 +276,43 @@ class PostRedisCacheTest {
     }
 
     @Test
-    void isKarmaScoreGreaterThanLowestScoreInZSet_KarmaScoreIsGreater_OptionalOfTrue() {
+    void isKarmaScoreGreaterThanLowestScoreInZSet_KarmaScoreIsGreater_True() {
 
         // given
         long karmaScore = 5;
 
         // when
-        Optional<Boolean> result = redisCache.isKarmaScoreGreaterThanLowestScoreInZSet(karmaScore);
+        boolean result = redisCache.isKarmaScoreGreaterThanLowestScoreInZSet(karmaScore);
 
         // then
-        assertTrue(result.isPresent());
-        assertTrue(result.get());
+        assertTrue(result);
     }
 
     @Test
-    void isKarmaScoreGreaterThanLowestScoreInZSet_KarmaScoreIsNotGreater_OptionalOfFalse() {
+    void isKarmaScoreGreaterThanLowestScoreInZSet_KarmaScoreIsNotGreater_False() {
 
         // given
         long karmaScore = -100;
 
         // when
-        Optional<Boolean> result = redisCache.isKarmaScoreGreaterThanLowestScoreInZSet(karmaScore);
+        boolean result = redisCache.isKarmaScoreGreaterThanLowestScoreInZSet(karmaScore);
 
         // then
-        assertTrue(result.isPresent());
-        assertFalse(result.get());
+        assertFalse(result);
     }
 
     @Test
-    void isKarmaScoreGreaterThanLowestScoreInZSet_CacheIsEmpty_OptionalEmpty() {
+    void isKarmaScoreGreaterThanLowestScoreInZSet_CacheIsEmpty_True() {
 
         // given
         redisConnectionFactory.getConnection().serverCommands().flushAll();
         long karmaScore = 404;
 
         // when
-        Optional<Boolean> result = redisCache.isKarmaScoreGreaterThanLowestScoreInZSet(karmaScore);
+        boolean result = redisCache.isKarmaScoreGreaterThanLowestScoreInZSet(karmaScore);
 
         // then
-        assertTrue(result.isEmpty());
+        assertTrue(result);
     }
 
     @Test
@@ -397,4 +392,28 @@ class PostRedisCacheTest {
 
         assertFalse(optionalCachedImageData.isPresent());
     }
+
+    @Test
+    void getZSetSize_ZSetIsEmpty_Zero() {
+
+        // given
+        redisConnectionFactory.getConnection().serverCommands().flushAll();
+
+        // when
+        long result = redisCache.getZSetSize();
+
+        // then
+        assertEquals(0, result);
+    }
+
+    @Test
+    void getZSetSize_ZSetIsNotEmpty_ZSetSize() {
+
+        // when
+        long result = redisCache.getZSetSize();
+
+        // then
+        assertEquals(TEST_CACHED_POSTS.size(), result);
+    }
+
 }
