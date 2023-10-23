@@ -225,7 +225,7 @@ public class PostService {
         PostWithImageDataDto post = grpcService.findByPostId(postId);
 
         if (!clientId.equals(post.postDto().getUserId())) {
-            throw new AccessDeniedException("Access denied");
+            throw new AccessDeniedException("Access denied. You must be the owner of the post to hide|delete it.");
         }
 
         boolean isVisibilityDeleted = post.postDto().getVisibility().equals(Visibility.DELETED);
@@ -233,7 +233,7 @@ public class PostService {
                 new SimpleGrantedAuthority(Role.ADMIN.name()));
 
         if (isVisibilityDeleted && !isUserAdmin) {
-            throw new AccessDeniedException("Access denied");
+            throw new AccessDeniedException("Access denied. You must be Admin to activate deleted post.");
         }
 
         grpcService.changePostVisibility(postId, visibility);
