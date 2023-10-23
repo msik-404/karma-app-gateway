@@ -15,6 +15,7 @@ import com.msik404.karmaappgateway.grpc.client.zipper.PostDtoZipper;
 import com.msik404.karmaappgateway.post.dto.PostDto;
 import com.msik404.karmaappgateway.post.dto.PostRatingResponse;
 import com.msik404.karmaappgateway.post.dto.PostWithImageDataDto;
+import com.msik404.karmaappgateway.post.dto.Visibility;
 import com.msik404.karmaappgateway.post.exception.FileProcessingException;
 import com.msik404.karmaappgateway.post.exception.ImageNotFoundException;
 import com.msik404.karmaappgateway.post.exception.PostNotFoundException;
@@ -406,6 +407,22 @@ public class GrpcDispatcherService {
 
         try {
             usersStub.updateUser(request).get();
+        } catch (InterruptedException ex) {
+            throw new InternalServerErrorException(ex.getMessage());
+        } catch (ExecutionException ex) {
+            throw decodeGrpcException(ex);
+        }
+    }
+
+    public Visibility fetchPostVisibility(
+            @NonNull com.msik404.karmaappposts.grpc.MongoObjectId request
+    ) throws UnsupportedVisibilityException, PostNotFoundException {
+
+        try {
+            PostVisibilityResponse response = postsStub.findPostVisibility(request).get();
+
+            return VisibilityMapper.map(response.getVisibility());
+
         } catch (InterruptedException ex) {
             throw new InternalServerErrorException(ex.getMessage());
         } catch (ExecutionException ex) {

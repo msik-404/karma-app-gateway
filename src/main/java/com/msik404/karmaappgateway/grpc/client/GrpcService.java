@@ -6,6 +6,7 @@ import java.util.List;
 import com.google.protobuf.ByteString;
 import com.msik404.karmaappgateway.auth.dto.RegisterRequest;
 import com.msik404.karmaappgateway.grpc.client.exception.UnsupportedRoleException;
+import com.msik404.karmaappgateway.grpc.client.exception.UnsupportedVisibilityException;
 import com.msik404.karmaappgateway.grpc.client.mapper.*;
 import com.msik404.karmaappgateway.post.dto.ScrollPosition;
 import com.msik404.karmaappgateway.post.dto.*;
@@ -401,6 +402,14 @@ public class GrpcService {
 
         // if nothing was in the updateRequest, then don't send empty request to microservice
         optionalRequest.ifPresent(dispatcher::updateUser);
+    }
+
+    @NonNull
+    public Visibility findVisibility(
+            @NonNull ObjectId postId
+    ) throws UnsupportedVisibilityException, PostNotFoundException {
+
+        return dispatcher.fetchPostVisibility(MongoObjectIdMapper.mapToPostsMongoObjectId(postId));
     }
 
 }

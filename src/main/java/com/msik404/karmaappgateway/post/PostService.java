@@ -1,6 +1,7 @@
 package com.msik404.karmaappgateway.post;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.OptionalDouble;
 
@@ -19,6 +20,7 @@ import org.bson.types.ObjectId;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -190,7 +192,18 @@ public class PostService {
     public void changeVisibility(
             @NonNull ObjectId postId,
             @NonNull Visibility visibility
-    ) throws PostNotFoundException {
+    ) throws AccessDeniedException, PostNotFoundException {
+
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        Collection<? extends GrantedAuthority> clientAuthorities = authentication.getAuthorities();
+        boolean isAdmin = clientAuthorities.contains(new SimpleGrantedAuthority(Role.ADMIN.name()));
+
+        if (!isAdmin) {
+            Visibility persistedVisibility = grpcService.findVisibility(postId);
+            if (persistedVisibility.equals(Visibility.DELETED)) {
+                throw new AccessDeniedException("Access denied. You must be admin to change deleted post status to hidden status.");
+            }
+        }
 
         grpcService.changePostVisibility(postId, visibility);
 

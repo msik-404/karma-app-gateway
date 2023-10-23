@@ -22,6 +22,7 @@ service Posts {
   rpc findPostRatingsWithCreatorId(PostRatingsWithCreatorIdRequest) returns (PostRatingsResponse) {}
   rpc findPostCreatorId(PostCreatorIdRequest) returns (PostCreatorIdResponse) {}
   rpc findPostWithImageData(PostRequest) returns (PostWithImageData) {}
+  rpc findPostVisibility(MongoObjectId) returns (PostVisibilityResponse) {}
 
 }
 
@@ -134,4 +135,8 @@ message PostRequest {
 message PostWithImageData {
   optional Post post = 1 [(buf.validate.field).required = true];
   optional bytes image_data = 2;
+}
+
+message PostVisibilityResponse {
+  optional PostVisibility visibility = 1 [(buf.validate.field).required = true];
 }
