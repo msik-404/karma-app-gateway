@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.OptionalDouble;
 
+import com.msik404.karmaappgateway.auth.exception.InsufficientRoleException;
 import com.msik404.karmaappgateway.grpc.client.GrpcService;
 import com.msik404.karmaappgateway.post.cache.PostRedisCache;
 import com.msik404.karmaappgateway.post.cache.PostRedisCacheHandlerService;
@@ -201,7 +202,7 @@ public class PostService {
         if (!isAdmin) {
             Visibility persistedVisibility = grpcService.findVisibility(postId);
             if (persistedVisibility.equals(Visibility.DELETED)) {
-                throw new AccessDeniedException(
+                throw new InsufficientRoleException(
                         "Access denied. You must be admin to change deleted post status to hidden status."
                 );
             }
@@ -227,7 +228,7 @@ public class PostService {
         PostWithImageDataDto post = grpcService.findByPostId(postId);
 
         if (!clientId.equals(post.postDto().getUserId())) {
-            throw new AccessDeniedException("Access denied. You must be the owner of the post to hide|delete it.");
+            throw new InsufficientRoleException("Access denied. You must be the owner of the post to hide|delete it.");
         }
 
         boolean isVisibilityDeleted = post.postDto().getVisibility().equals(Visibility.DELETED);
@@ -235,7 +236,7 @@ public class PostService {
                 new SimpleGrantedAuthority(Role.ADMIN.name()));
 
         if (isVisibilityDeleted && !isUserAdmin) {
-            throw new AccessDeniedException("Access denied. You must be Admin to activate deleted post.");
+            throw new InsufficientRoleException("Access denied. You must be Admin to activate deleted post.");
         }
 
         grpcService.changePostVisibility(postId, visibility);
