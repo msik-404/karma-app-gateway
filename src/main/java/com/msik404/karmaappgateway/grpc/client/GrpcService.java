@@ -38,11 +38,19 @@ import org.springframework.stereotype.Service;
  * This class accepts this microservice specific classes and transforms them into grpc requests and runs them.
  */
 @Service
-@RequiredArgsConstructor
 public class GrpcService {
 
     private final GrpcDispatcherService dispatcher;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final UserUpdateMapper userUpdateMapper;
+
+    public GrpcService(GrpcDispatcherService dispatcher, BCryptPasswordEncoder bCryptPasswordEncoder) {
+
+        this.dispatcher = dispatcher;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+
+        this.userUpdateMapper = new UserUpdateMapper(bCryptPasswordEncoder);
+    }
 
     @NonNull
     public List<PostDto> findTopNPosts(
@@ -386,7 +394,7 @@ public class GrpcService {
             @NonNull UserUpdateRequestWithUserPrivilege updateRequest
     ) throws DuplicateUsernameException, DuplicateEmailException, DuplicateUnexpectedFieldException {
 
-        var optionalRequest = UserUpdateMapper.map(userId, updateRequest);
+        var optionalRequest = userUpdateMapper.map(userId, updateRequest);
 
         // if nothing was in the updateRequest, then don't send empty request to microservice
         optionalRequest.ifPresent(dispatcher::updateUser);
@@ -398,7 +406,7 @@ public class GrpcService {
     ) throws UnsupportedRoleException, DuplicateUsernameException, DuplicateEmailException,
             DuplicateUnexpectedFieldException {
 
-        var optionalRequest = UserUpdateMapper.map(userId, updateRequest);
+        var optionalRequest = userUpdateMapper.map(userId, updateRequest);
 
         // if nothing was in the updateRequest, then don't send empty request to microservice
         optionalRequest.ifPresent(dispatcher::updateUser);

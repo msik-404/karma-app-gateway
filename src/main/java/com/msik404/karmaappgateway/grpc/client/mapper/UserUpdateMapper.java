@@ -6,13 +6,19 @@ import com.msik404.karmaappgateway.grpc.client.exception.UnsupportedRoleExceptio
 import com.msik404.karmaappgateway.user.dto.UserUpdateRequestWithAdminPrivilege;
 import com.msik404.karmaappgateway.user.dto.UserUpdateRequestWithUserPrivilege;
 import com.msik404.karmaappusers.grpc.UpdateUserRequest;
+import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.lang.NonNull;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+@RequiredArgsConstructor
 public class UserUpdateMapper {
 
+
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
     @NonNull
-    private static Optional<UpdateUserRequest.Builder> mapImpl(
+    private Optional<UpdateUserRequest.Builder> mapImpl(
             @NonNull ObjectId userId,
             @NonNull UserUpdateRequestWithUserPrivilege request
     ) {
@@ -40,7 +46,7 @@ public class UserUpdateMapper {
         }
         if (request.password() != null) {
             somethingWasSet = true;
-            builder.setPassword(request.password());
+            builder.setPassword(bCryptPasswordEncoder.encode(request.password()));
         }
 
         if (somethingWasSet) {
@@ -50,7 +56,7 @@ public class UserUpdateMapper {
     }
 
     @NonNull
-    public static Optional<UpdateUserRequest> map(
+    public Optional<UpdateUserRequest> map(
             @NonNull ObjectId userId,
             @NonNull UserUpdateRequestWithUserPrivilege request
     ) {
@@ -58,7 +64,7 @@ public class UserUpdateMapper {
     }
 
     @NonNull
-    public static Optional<UpdateUserRequest> map(
+    public Optional<UpdateUserRequest> map(
             @NonNull ObjectId userId,
             @NonNull UserUpdateRequestWithAdminPrivilege request
     ) throws UnsupportedRoleException {
