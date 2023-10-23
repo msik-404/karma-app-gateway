@@ -2,7 +2,6 @@ package com.msik404.karmaappgateway.post.cache;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import com.msik404.karmaappgateway.grpc.client.GrpcService;
 import com.msik404.karmaappgateway.post.comparator.BasicComparablePost;
@@ -112,26 +111,44 @@ public class PostRedisCacheHandlerService {
         return results;
     }
 
-    public boolean loadToCacheIfKarmaScoreIsHighEnough(@NonNull PostWithImageDataDto post) {
+    /**
+     * Post will be cached if less than CACHED_POSTS_AMOUNT posts are cached or input post score is higher than
+     * the lowest cached post score. Because of this functionality there may be more cached posts than specified
+     * amount allows, but I doubt that this would be problematic, because cache gets refreshed every PostRedisCache.TIMEOUT.
+     *
+     * @param post Input post with image data to be cached.
+     * @return true if cached else false.
+     */
+    public boolean loadToCacheIfPossible(@NonNull PostWithImageDataDto post) {
 
-        boolean isAccepted = cache.isKarmaScoreGreaterThanLowestScoreInZSet(
-                post.postDto().getKarmaScore());
+        long cacheSize = cache.getZSetSize();
 
-        if (!isAccepted) {
-            return false;
+        if (cacheSize >= CACHED_POSTS_AMOUNT) {
+
+            boolean isAccepted = cache.isKarmaScoreGreaterThanLowestScoreInZSet(
+                    post.postDto().getKarmaScore());
+
+            if (!isAccepted) {
+                return false;
+            }
         }
 
         return cache.insertPost(post.postDto(), post.imageData());
     }
 
-    public boolean loadPostDataToCacheIfKarmaScoreIsHighEnough(
+    /**
+     * @param postId Id of post with image data if found to be cached.
+     * @return true if cached else false.
+     * @throws PostNotFoundException thrown when post with requested postId is not found.
+     */
+    public boolean loadPostDataToCacheIfPossible(
             @NonNull ObjectId postId
-    ) throws UserNotFoundException {
+    ) throws PostNotFoundException {
 
         try {
             PostWithImageDataDto post = grpcService.findByPostId(postId);
 
-            return loadToCacheIfKarmaScoreIsHighEnough(post);
+            return loadToCacheIfPossible(post);
 
         } catch (PostNotFoundException ex) {
             return false;

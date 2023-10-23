@@ -166,7 +166,7 @@ public class PostService {
 
         OptionalDouble optionalNewKarmaScore = cache.updateKarmaScoreIfPresent(postId, delta);
         if (optionalNewKarmaScore.isEmpty()) { // this means that this post is not cached
-            cacheHandler.loadPostDataToCacheIfKarmaScoreIsHighEnough(postId);
+            cacheHandler.loadPostDataToCacheIfPossible(postId);
         }
     }
 
@@ -185,7 +185,7 @@ public class PostService {
 
         OptionalDouble optionalNewKarmaScore = cache.updateKarmaScoreIfPresent(postId, delta);
         if (optionalNewKarmaScore.isEmpty()) { // this means that this post is not cached
-            cacheHandler.loadPostDataToCacheIfKarmaScoreIsHighEnough(postId);
+            cacheHandler.loadPostDataToCacheIfPossible(postId);
         }
     }
 
@@ -210,7 +210,7 @@ public class PostService {
         grpcService.changePostVisibility(postId, visibility);
 
         if (visibility.equals(Visibility.ACTIVE)) { // if this post was made active it might be high enough karma score
-            cacheHandler.loadPostDataToCacheIfKarmaScoreIsHighEnough(postId);
+            cacheHandler.loadPostDataToCacheIfPossible(postId);
         } else {
             cache.deletePostFromCache(postId);
         }
@@ -242,7 +242,7 @@ public class PostService {
 
         // if this post was made active it might have high enough karma score to be cached
         if (visibility.equals(Visibility.ACTIVE)) {
-            cacheHandler.loadToCacheIfKarmaScoreIsHighEnough(post);
+            cacheHandler.loadToCacheIfPossible(post);
         } else {
             cache.deletePostFromCache(post.postDto().getId());
         }
