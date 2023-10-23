@@ -20,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -193,7 +192,7 @@ public class PostService {
     public void changeVisibility(
             @NonNull ObjectId postId,
             @NonNull Visibility visibility
-    ) throws AccessDeniedException, PostNotFoundException {
+    ) throws InsufficientRoleException, PostNotFoundException {
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         Collection<? extends GrantedAuthority> clientAuthorities = authentication.getAuthorities();
@@ -220,7 +219,7 @@ public class PostService {
     public void changeOwnedPostVisibility(
             @NonNull ObjectId postId,
             @NonNull Visibility visibility
-    ) throws AccessDeniedException, UserNotFoundException, PostNotFoundException {
+    ) throws InsufficientRoleException, UserNotFoundException, PostNotFoundException {
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var clientId = (ObjectId) authentication.getPrincipal();

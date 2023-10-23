@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.msik404.karmaappgateway.auth.exception.InsufficientRoleException;
 import com.msik404.karmaappgateway.post.dto.*;
 import com.msik404.karmaappgateway.post.exception.ImageNotFoundException;
 import com.msik404.karmaappgateway.post.exception.PostNotFoundException;
@@ -18,7 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -234,7 +234,7 @@ public class PostController {
     @PostMapping("user/posts/{postId}/hide")
     public ResponseEntity<Void> hideByUser(
             @PathVariable ObjectId postId
-    ) throws AccessDeniedException, UserNotFoundException, PostNotFoundException {
+    ) throws InsufficientRoleException, UserNotFoundException, PostNotFoundException {
 
         postService.changeOwnedPostVisibility(postId, Visibility.HIDDEN);
         return ResponseEntity.ok(null);
@@ -243,7 +243,7 @@ public class PostController {
     @PostMapping("user/posts/{postId}/unhide")
     public ResponseEntity<Void> unhideByUser(
             @PathVariable ObjectId postId
-    ) throws AccessDeniedException, UserNotFoundException, PostNotFoundException {
+    ) throws InsufficientRoleException, UserNotFoundException, PostNotFoundException {
 
         postService.changeOwnedPostVisibility(postId, Visibility.ACTIVE);
         return ResponseEntity.ok(null);
@@ -262,7 +262,7 @@ public class PostController {
     @PostMapping("user/posts/{postId}/delete")
     public ResponseEntity<Void> deleteByUser(
             @PathVariable ObjectId postId
-    ) throws AccessDeniedException, UserNotFoundException, PostNotFoundException {
+    ) throws InsufficientRoleException, UserNotFoundException, PostNotFoundException {
 
         postService.changeOwnedPostVisibility(postId, Visibility.DELETED);
         return ResponseEntity.ok(null);
