@@ -27,7 +27,6 @@ import com.msik404.karmaappusers.grpc.CreateUserRequest;
 import com.msik404.karmaappusers.grpc.CredentialsRequest;
 import com.msik404.karmaappusers.grpc.UserIdRequest;
 import com.msik404.karmaappusers.grpc.UserRoleRequest;
-import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
