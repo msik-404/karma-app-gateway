@@ -213,7 +213,7 @@ public class PostRedisCache {
         }
 
         // In this code we want to mimic key set pagination on (karmaScore, postId), that means that posts with higher
-        // karmaScore are first and if two posts have the same karmaScore post with higher lexicographical postId will
+        // karmaScore are first and if two posts have the same karmaScore, post with higher lexicographical postId will
         // be first (postId are unique). Sadly reverseRangeByScoreWithScores does not guarantee that, because it fetches
         // count amount of tuples lower or equal to given input score. To solve this issue we have to specify count
         // variable high enough so that we can iterate over all initial tuples with score equal to given input score,
