@@ -80,6 +80,29 @@ public class TestingDataGenerator {
         posts.add(getPostDtoForTesting(userTwoId, 7, 2));
         posts.add(getPostDtoForTesting(userTwoId, 8, 4));
         posts.add(getPostDtoForTesting(userTwoId, 9, 0));
+        posts.add(getPostDtoForTesting(userTwoId, 10, 5));
+
+        posts.sort(new CachedPostComparator());
+
+        return posts;
+    }
+
+    @NonNull
+    public static List<PostDto> getManyPostsForTesting(int duplicateCount) {
+
+        int postsAmount = 9;
+        List<PostDto> posts = new ArrayList<>(postsAmount);
+        long userOneId = 1;
+
+        for (int i = 0; i < duplicateCount; i++) {
+            posts.add(getPostDtoForTesting(userOneId, i, 5));
+        }
+
+        posts.add(getPostDtoForTesting(userOneId, duplicateCount, 4));
+        posts.add(getPostDtoForTesting(userOneId, duplicateCount + 1, 3));
+        posts.add(getPostDtoForTesting(userOneId, duplicateCount + 2, 3));
+        posts.add(getPostDtoForTesting(userOneId, duplicateCount + 3, 3));
+        posts.add(getPostDtoForTesting(userOneId, duplicateCount + 4, 3));
 
         posts.sort(new CachedPostComparator());
 

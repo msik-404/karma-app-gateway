@@ -11,7 +11,6 @@ import com.msik404.karmaappgateway.post.dto.PostWithImageDataDto;
 import com.msik404.karmaappgateway.post.dto.ScrollPosition;
 import com.msik404.karmaappgateway.post.dto.Visibility;
 import com.msik404.karmaappgateway.post.exception.PostNotFoundException;
-import com.msik404.karmaappgateway.user.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.lang.NonNull;
@@ -20,8 +19,6 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class PostRedisCacheHandlerService {
-
-    private static final int CACHED_POSTS_AMOUNT = 10_000;
 
     private final PostRedisCache cache;
 
@@ -35,7 +32,7 @@ public class PostRedisCacheHandlerService {
     public List<PostDto> updateCache() {
 
         List<PostDto> newValuesForCache = grpcService.findTopNPosts(
-                CACHED_POSTS_AMOUNT,
+                PostRedisCache.getMaxCachedPosts(),
                 List.of(Visibility.ACTIVE)
         );
 
@@ -101,7 +98,7 @@ public class PostRedisCacheHandlerService {
                 int endBound = Math.min(firstSmallerElementIdx + size, newValuesForCache.size());
                 results = newValuesForCache.subList(firstSmallerElementIdx, endBound);
             } else {
-                results = cache.findNextNCached(size, scrollPosition.karmaScore())
+                results = cache.findNextNCached(size, scrollPosition)
                         .orElseGet(() -> grpcService.findNextNPosts(size, visibilities, scrollPosition));
             }
         } else {
@@ -123,7 +120,7 @@ public class PostRedisCacheHandlerService {
 
         long cacheSize = cache.getZSetSize();
 
-        if (cacheSize >= CACHED_POSTS_AMOUNT) {
+        if (cacheSize >= PostRedisCache.getMaxCachedPosts()) {
 
             boolean isAccepted = cache.isKarmaScoreGreaterThanLowestScoreInZSet(
                     post.postDto().getKarmaScore());

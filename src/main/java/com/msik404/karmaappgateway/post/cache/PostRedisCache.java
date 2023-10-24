@@ -5,6 +5,7 @@ import java.util.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.msik404.karmaappgateway.post.dto.PostDto;
+import com.msik404.karmaappgateway.post.dto.ScrollPosition;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.data.redis.connection.DefaultStringTuple;
@@ -29,6 +30,15 @@ public class PostRedisCache {
     private static final String POST_PREFIX = "post";
 
     private static final Duration TIMEOUT = Duration.ofSeconds(3600);
+
+    // Maximum amount of initial posts that can have same karmaScore.
+    private static final int MAX_INITIAL_SCORE_DUPLICATES = 100;
+
+    private static final int MAX_CACHED_POSTS = 10_000;
+
+    public static int getMaxCachedPosts() {
+        return MAX_CACHED_POSTS;
+    }
 
     @NonNull
     private static String getPostKey(@NonNull ObjectId postId) {
@@ -164,6 +174,7 @@ public class PostRedisCache {
     @NonNull
     public Optional<List<PostDto>> findTopNCached(int size) {
 
+        // this set is LinkedHashSet so iteration order is preserved.
         Set<ZSetOperations.TypedTuple<String>> postIdKeySetWithScores = redisTemplate.opsForZSet()
                 .reverseRangeWithScores(KARMA_SCORE_ZSET_KEY, 0, size - 1);
 
@@ -175,30 +186,75 @@ public class PostRedisCache {
     }
 
     /**
-     * @param size Requested amount of posts.
-     * @param karmaScore score of last received post.
+     * @param size     Requested amount of posts.
+     * @param position ScrollPosition of lastly returned post.
      * @return Optional of List of PostDto objects, this list has exactly size elements, Optional empty if not enough
      * posts are in cache. If two scores of posts are the same, the one with higher lexicographical order is first.
      */
     @NonNull
-    public Optional<List<PostDto>> findNextNCached(int size, long karmaScore) {
+    public Optional<List<PostDto>> findNextNCached(int size, @NonNull ScrollPosition position) {
 
-        // offset is one because we have to skip first element with karmaScore, otherwise we will have duplicates
-        // in pagination
+        int count = size + MAX_INITIAL_SCORE_DUPLICATES;
+
+        // this set is LinkedHashSet so iteration order is preserved.
         Set<ZSetOperations.TypedTuple<String>> postIdKeySetWithScores = redisTemplate.opsForZSet()
                 .reverseRangeByScoreWithScores(
-                        KARMA_SCORE_ZSET_KEY, Double.NEGATIVE_INFINITY, karmaScore, 1, size);
+                        KARMA_SCORE_ZSET_KEY,
+                        Double.NEGATIVE_INFINITY,
+                        position.karmaScore(),
+                        0,
+                        count
+                );
 
-        // opsForZset().reverseRangeByScoreWithScores() cannot be null because it only can if used in transaction|pipeline.
-        if (postIdKeySetWithScores.size() != size) {
+        // size + 1 is the most optimistic case. That is there is no initial duplicate and size tuples are left to
+        // be collected. If size is less than size + 1, certainly all requested posts won't be able to be collected.
+        if (postIdKeySetWithScores.size() < size + 1) {
             return Optional.empty();
         }
-        return Optional.of(findCachedByZSet(postIdKeySetWithScores));
+
+        // In this code we want to mimic key set pagination on (karmaScore, postId), that means that posts with higher
+        // karmaScore are first and if two posts have the same karmaScore post with higher lexicographical postId will
+        // be first (postId are unique). Sadly reverseRangeByScoreWithScores does not guarantee that, because it fetches
+        // count amount of tuples lower or equal to given input score. To solve this issue we have to specify count
+        // variable high enough so that we can iterate over all initial tuples with score equal to given input score,
+        // until we find tuple with required postId. After finding this tuple we should be able to collect the
+        // remaining size amount of tuples. To achieve this goal, I define constant called MAX_INITIAL_SCORE_DUPLICATES.
+        // If not enough tuples are collected, Optional empty is returned which means that cache could not be used.
+
+        List<ZSetOperations.TypedTuple<String>> results = new ArrayList<>(size);
+        String targetKey = getPostKey(position.postId());
+        int collected = 0;
+        int skipped = 0;
+        boolean found = false;
+
+        // opsForZSet().reverseRangeByScoreWithScores() cannot be null because it only if used can in transaction|pipeline.
+        for (ZSetOperations.TypedTuple<String> tuple : postIdKeySetWithScores) {
+            if (!found) {
+                if (tuple.getValue().equals(targetKey)) {
+                    found = true;
+                }
+                skipped++;
+                if (count - skipped < size) { // this means that not enough posts left to be collected.
+                    return Optional.empty();
+                }
+            } else {
+                results.add(tuple);
+                collected++;
+                if (collected == size) {
+                    break;
+                }
+            }
+        }
+
+        if (results.size() != size) {
+            return Optional.empty();
+        }
+        return Optional.of(findCachedByZSet(results));
     }
 
     /**
      * @param postId Id of post whose score is being updated.
-     * @param delta score delta to be added to cached value.
+     * @param delta  score delta to be added to cached value.
      * @return Optional of new score if post was cached, Optional empty if post wasn't cached.
      */
     @NonNull
@@ -268,7 +324,7 @@ public class PostRedisCache {
     }
 
     /**
-     * @param post post contents to be cached.
+     * @param post      post contents to be cached.
      * @param imageData optional image data to be cached.
      * @return true if post was cached.
      */

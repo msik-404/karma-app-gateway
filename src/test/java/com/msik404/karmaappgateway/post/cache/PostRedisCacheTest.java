@@ -1,12 +1,15 @@
 package com.msik404.karmaappgateway.post.cache;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalDouble;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.msik404.karmaappgateway.RedisConfiguration;
 import com.msik404.karmaappgateway.TestingDataGenerator;
-import com.msik404.karmaappgateway.post.cache.PostRedisCache;
 import com.msik404.karmaappgateway.post.dto.PostDto;
+import com.msik404.karmaappgateway.post.dto.ScrollPosition;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -129,16 +132,30 @@ class PostRedisCacheTest {
     }
 
     @Test
-    void findNextNCached_NextSizeIsTwoAndTopSizeIsTwo_TwoAfterTopTwoFound() {
+    void findTopNCached_MoreThanCached_OptionalEmpty() {
 
         // given
-        int nextSize = 2;
-        int topSize = 2;
-
-        long lastPostScore = TEST_CACHED_POSTS.get(topSize - 1).getKarmaScore();
+        int size = TEST_CACHED_POSTS.size() + 1;
 
         // when
-        Optional<List<PostDto>> optionalNextCachedPosts = redisCache.findNextNCached(nextSize, lastPostScore);
+        Optional<List<PostDto>> optionalCachedPosts = redisCache.findTopNCached(size);
+
+        // then
+        assertFalse(optionalCachedPosts.isPresent());
+    }
+
+    @Test
+    void findNextNCached_NextSizeIsFiveAndTopSizeIsThree_FiveAfterTopThreeFound() {
+
+        // given
+        int nextSize = 5;
+        int topSize = 3;
+
+        PostDto lastPost = TEST_CACHED_POSTS.get(topSize - 1);
+        var position = new ScrollPosition(lastPost.getId(), lastPost.getKarmaScore());
+
+        // when
+        Optional<List<PostDto>> optionalNextCachedPosts = redisCache.findNextNCached(nextSize, position);
 
         // then
         assertTrue(optionalNextCachedPosts.isPresent());
@@ -153,6 +170,65 @@ class PostRedisCacheTest {
         for (int i = 0; i < nextCachedPosts.size(); i++) {
             assertEquals(groundTruthNextPosts.get(i), nextCachedPosts.get(i));
         }
+    }
+
+    @Test
+    void findNextNCached_MaximumDuplicateCountCase_FourAfterHundredFound() {
+
+        // given
+        redisConnectionFactory.getConnection().serverCommands().flushAll();
+
+        int nextSize = 4;
+        int duplicateCount = 100;
+        int topSize = 100;
+
+        List<PostDto> manyTestingPosts = TestingDataGenerator.getManyPostsForTesting(duplicateCount);
+
+        redisCache.reinitializeCache(manyTestingPosts);
+
+        PostDto lastPost = manyTestingPosts.get(topSize - 1);
+        var position = new ScrollPosition(lastPost.getId(), lastPost.getKarmaScore());
+
+        // when
+        Optional<List<PostDto>> optionalNextCachedPosts = redisCache.findNextNCached(nextSize, position);
+
+        // then
+        assertTrue(optionalNextCachedPosts.isPresent());
+
+        List<PostDto> nextCachedPosts = optionalNextCachedPosts.get();
+
+        assertEquals(nextSize, nextCachedPosts.size());
+
+        int endBound = Math.min(topSize + nextSize, manyTestingPosts.size());
+        List<PostDto> groundTruthNextPosts = manyTestingPosts.subList(topSize, endBound);
+
+        for (int i = 0; i < nextCachedPosts.size(); i++) {
+            assertEquals(groundTruthNextPosts.get(i), nextCachedPosts.get(i));
+        }
+    }
+
+    @Test
+    void findNextNCached_OneMoreThanMaximumDuplicateCountCase_OptionalEmpty() {
+
+        // given
+        redisConnectionFactory.getConnection().serverCommands().flushAll();
+
+        int nextSize = 4;
+        int duplicateCount = 101;
+        int topSize = 101;
+
+        List<PostDto> manyTestingPosts = TestingDataGenerator.getManyPostsForTesting(duplicateCount);
+
+        redisCache.reinitializeCache(manyTestingPosts);
+
+        PostDto lastPost = manyTestingPosts.get(topSize - 1);
+        var position = new ScrollPosition(lastPost.getId(), lastPost.getKarmaScore());
+
+        // when
+        Optional<List<PostDto>> optionalNextCachedPosts = redisCache.findNextNCached(nextSize, position);
+
+        // then
+        assertTrue(optionalNextCachedPosts.isEmpty());
     }
 
     @Test
