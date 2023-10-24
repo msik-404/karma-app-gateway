@@ -143,7 +143,6 @@ public class PostService {
             if (!image.isEmpty()) {
                 byte[] imageData = image.getBytes();
                 grpcService.createPost(clientId, request, imageData);
-                cache.cacheImage(clientId, imageData);
             }
         } catch (IOException ex) {
             throw new FileProcessingException();
