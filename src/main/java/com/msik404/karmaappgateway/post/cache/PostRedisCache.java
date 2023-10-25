@@ -64,6 +64,8 @@ public class PostRedisCache {
      */
     public void reinitializeCache(@NonNull Collection<PostDto> posts) {
 
+        System.out.println("reinitializeCache");
+
         assert !posts.isEmpty();
 
         Set<StringRedisConnection.StringTuple> tuplesToAdd = new HashSet<>(posts.size());
@@ -113,6 +115,8 @@ public class PostRedisCache {
 
     public boolean cacheImage(@NonNull ObjectId postId, @NonNull byte[] imageData) {
 
+        System.out.println("cacheImage");
+
         Object results = redisTemplate.execute((RedisCallback<Object>) connection ->
                 connection.stringCommands().set(
                         getPostImageKey(postId).getBytes(),
@@ -130,6 +134,8 @@ public class PostRedisCache {
      */
     @NonNull
     public Optional<byte[]> getCachedImage(@NonNull ObjectId postId) {
+
+        System.out.println("getCachedImage");
 
         Object results = redisTemplate.execute((RedisCallback<Object>) connection ->
                 connection.stringCommands().getEx(
@@ -174,6 +180,8 @@ public class PostRedisCache {
     @NonNull
     public Optional<List<PostDto>> findTopNCached(int size) {
 
+        System.out.println("findTopNCached");
+
         // this set is LinkedHashSet so iteration order is preserved.
         Set<ZSetOperations.TypedTuple<String>> postIdKeySetWithScores = redisTemplate.opsForZSet()
                 .reverseRangeWithScores(KARMA_SCORE_ZSET_KEY, 0, size - 1);
@@ -193,6 +201,8 @@ public class PostRedisCache {
      */
     @NonNull
     public Optional<List<PostDto>> findNextNCached(int size, @NonNull ScrollPosition position) {
+
+        System.out.println("findNextNCached");
 
         int count = size + MAX_INITIAL_SCORE_DUPLICATES;
 
@@ -260,6 +270,8 @@ public class PostRedisCache {
     @NonNull
     public OptionalDouble updateKarmaScoreIfPresent(@NonNull ObjectId postId, double delta) {
 
+        System.out.println("updateKarmaScoreIfPresent");
+
         ZSetOperations<String, String> zSetOps = redisTemplate.opsForZSet();
         String postIdKey = getPostKey(postId);
 
@@ -278,6 +290,8 @@ public class PostRedisCache {
      * @return true if post was deleted, false if not.
      */
     public boolean deletePostFromCache(@NonNull ObjectId postId) {
+
+        System.out.println("deletePostFromCache");
 
         String postIdKey = getPostKey(postId);
 
@@ -299,6 +313,9 @@ public class PostRedisCache {
      */
     @NonNull
     public long getZSetSize() {
+
+        System.out.println("getZSetSize");
+
         // opsForZset().size() cannot be null because it only can if used in transaction|pipeline.
         return redisTemplate.opsForZSet().size(KARMA_SCORE_ZSET_KEY);
     }
@@ -309,6 +326,8 @@ public class PostRedisCache {
      */
     @NonNull
     public boolean isKarmaScoreGreaterThanLowestScoreInZSet(long karmaScore) {
+
+        System.out.println("isKarmaScoreGreaterThanLowestScoreInZSet");
 
         Set<ZSetOperations.TypedTuple<String>> lowestScorePostIdWithScore = redisTemplate.opsForZSet()
                 .rangeWithScores(KARMA_SCORE_ZSET_KEY, 0, 0);
@@ -329,6 +348,8 @@ public class PostRedisCache {
      * @return true if post was cached.
      */
     public boolean insertPost(@NonNull PostDto post, @Nullable byte[] imageData) {
+
+        System.out.println("insertPost");
 
         String serializedPost = serialize(post);
 
