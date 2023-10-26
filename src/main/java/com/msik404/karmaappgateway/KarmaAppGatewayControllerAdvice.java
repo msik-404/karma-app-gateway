@@ -1,7 +1,7 @@
 package com.msik404.karmaappgateway;
 
 import com.msik404.karmaappgateway.exception.RestFromGrpcException;
-import com.msik404.karmaappgateway.grpc.client.exception.AbstractRestException;
+import com.msik404.karmaappgateway.exception.AbstractRestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.core.AuthenticationException;

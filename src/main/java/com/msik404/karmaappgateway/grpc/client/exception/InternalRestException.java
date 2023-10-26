@@ -1,5 +1,6 @@
 package com.msik404.karmaappgateway.grpc.client.exception;
 
+import com.msik404.karmaappgateway.exception.AbstractRestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.lang.NonNull;
