@@ -230,8 +230,8 @@ public class PostService {
         }
 
         boolean isVisibilityDeleted = post.postDto().getVisibility().equals(Visibility.DELETED);
-        boolean isUserAdmin = authentication.getAuthorities().contains(
-                new SimpleGrantedAuthority(Role.ADMIN.name()));
+        boolean isUserAdmin = authentication.getAuthorities()
+                .contains(new SimpleGrantedAuthority(Role.ADMIN.name()));
 
         if (isVisibilityDeleted && !isUserAdmin) {
             throw new InsufficientRoleException("Access denied. You must be Admin to activate deleted post.");
