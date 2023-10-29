@@ -206,7 +206,7 @@ public class PostController {
     @PostMapping("user/posts")
     public ResponseEntity<Void> create(
             @Valid @RequestPart("json_data") PostCreationRequest jsonData,
-            @RequestPart("image") MultipartFile image) {
+            @RequestPart(value = "image", required = false) MultipartFile image) {
 
         postService.create(jsonData, image);
         return ResponseEntity.ok(null);
