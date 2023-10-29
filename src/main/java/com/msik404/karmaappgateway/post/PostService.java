@@ -139,16 +139,15 @@ public class PostService {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var clientId = (ObjectId) authentication.getPrincipal();
 
-        byte[] imageData = null;
-
         try {
+            byte[] imageData = null;
             if (image != null && !image.isEmpty()) {
                 imageData = image.getBytes();
             }
+            grpcService.createPost(clientId, request, imageData);
         } catch (IOException ex) {
             throw new FileProcessingException();
         }
-        grpcService.createPost(clientId, request, imageData);
     }
 
     public void rate(
