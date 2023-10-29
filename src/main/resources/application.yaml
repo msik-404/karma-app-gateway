@@ -1,11 +1,11 @@
 spring:
   data:
     redis:
-      host: ${REDIS_HOSTNAME}
+      host: ${KARMA_APP_GATEWAY_REDIS_HOSTNAME}
       port: 6379
 
 jwt:
-  secret: ${SECRET}
+  secret: ${KARMA_APP_GATEWAY_SECRET}
 
 KarmaAppPosts:
   grpc:

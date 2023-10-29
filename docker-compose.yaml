@@ -14,7 +14,7 @@ services:
 
   redis:
     image: redis/redis-stack:latest
-    hostname: ${REDIS_HOSTNAME}
+    hostname: ${KARMA_APP_GATEWAY_REDIS_HOSTNAME}
     networks:
       - karma-app-net
     ports:
