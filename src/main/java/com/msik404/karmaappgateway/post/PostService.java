@@ -134,19 +134,21 @@ public class PostService {
 
     public void create(
             @NonNull PostCreationRequest request,
-            @NonNull MultipartFile image) throws FileProcessingException {
+            @Nullable MultipartFile image) throws FileProcessingException {
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var clientId = (ObjectId) authentication.getPrincipal();
 
+        byte[] imageData = null;
+
         try {
-            if (!image.isEmpty()) {
-                byte[] imageData = image.getBytes();
-                grpcService.createPost(clientId, request, imageData);
+            if (image != null && !image.isEmpty()) {
+                imageData = image.getBytes();
             }
         } catch (IOException ex) {
             throw new FileProcessingException();
         }
+        grpcService.createPost(clientId, request, imageData);
     }
 
     public void rate(
