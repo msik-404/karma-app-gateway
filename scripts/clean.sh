@@ -12,3 +12,6 @@ docker image rm karma-app-gateway-backend
 
 # delete volumes
 docker volume rm karma-app-gateway_redis-data
+
+# delete network
+docker network rm karma-app-net

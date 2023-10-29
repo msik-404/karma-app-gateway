@@ -31,4 +31,4 @@ volumes:
 networks:
   karma-app-net:
     name: karma-app-net
-    external: true
+    driver: bridge
