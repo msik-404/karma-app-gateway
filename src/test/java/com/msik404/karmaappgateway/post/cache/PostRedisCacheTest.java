@@ -38,9 +38,12 @@ class PostRedisCacheTest {
     private static final TestingDataGenerator.CachedPostComparator TEST_COMPARATOR =
             new TestingDataGenerator.CachedPostComparator();
 
-    @Container
     public static final GenericContainer<?> REDIS_CONTAINER = new GenericContainer(
             DockerImageName.parse("redis:alpine")).withExposedPorts(6379);
+
+    static {
+        REDIS_CONTAINER.start();
+    }
 
     @DynamicPropertySource
     private static void registerRedisProperties(DynamicPropertyRegistry registry) {
