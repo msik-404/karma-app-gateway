@@ -253,7 +253,7 @@ public class PostController {
     @PostMapping("mod/posts/{postId}/hide")
     public ResponseEntity<Void> hideByMod(
             @PathVariable ObjectId postId
-    ) throws PostNotFoundException {
+    ) throws InsufficientRoleException, PostNotFoundException {
 
         postService.changeVisibility(postId, Visibility.HIDDEN);
         return ResponseEntity.ok(null);
