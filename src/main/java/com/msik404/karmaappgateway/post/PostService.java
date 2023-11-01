@@ -200,6 +200,9 @@ public class PostService {
 
         if (!isAdmin) {
             Visibility persistedVisibility = grpcService.findVisibility(postId);
+            if (persistedVisibility == visibility) {
+                return;
+            }
             if (persistedVisibility.equals(Visibility.DELETED)) {
                 throw new InsufficientRoleException(
                         "Access denied. You must be admin to change deleted post status to hidden status."
@@ -225,6 +228,9 @@ public class PostService {
         var clientId = (ObjectId) authentication.getPrincipal();
 
         PostWithImageDataDto post = grpcService.findByPostId(postId);
+        if (visibility == post.postDto().getVisibility()) {
+            return;
+        }
 
         if (!clientId.equals(post.postDto().getUserId())) {
             throw new InsufficientRoleException("Access denied. You must be the owner of the post to hide|delete it.");
