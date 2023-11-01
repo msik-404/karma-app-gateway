@@ -249,6 +249,15 @@ public class PostController {
         return ResponseEntity.ok(null);
     }
 
+    @PostMapping("user/posts/{postId}/delete")
+    public ResponseEntity<Void> deleteByUser(
+            @PathVariable ObjectId postId
+    ) throws InsufficientRoleException, UserNotFoundException, PostNotFoundException {
+
+        postService.changeOwnedPostVisibility(postId, Visibility.DELETED);
+        return ResponseEntity.ok(null);
+    }
+
     // todo: this is a little bit stupid because post creator can unhide his post.
     @PostMapping("mod/posts/{postId}/hide")
     public ResponseEntity<Void> hideByMod(
@@ -256,15 +265,6 @@ public class PostController {
     ) throws InsufficientRoleException, PostNotFoundException {
 
         postService.changeVisibility(postId, Visibility.HIDDEN);
-        return ResponseEntity.ok(null);
-    }
-
-    @PostMapping("user/posts/{postId}/delete")
-    public ResponseEntity<Void> deleteByUser(
-            @PathVariable ObjectId postId
-    ) throws InsufficientRoleException, UserNotFoundException, PostNotFoundException {
-
-        postService.changeOwnedPostVisibility(postId, Visibility.DELETED);
         return ResponseEntity.ok(null);
     }
 
