@@ -253,7 +253,7 @@ public class PostController {
     @PostMapping("mod/posts/{postId}/hide")
     public ResponseEntity<Void> hideByMod(
             @PathVariable ObjectId postId
-    ) throws InsufficientRoleException, PostNotFoundException, UserNotFoundException {
+    ) throws InsufficientRoleException, PostNotFoundException {
 
         postService.changeVisibility(postId, Visibility.HIDDEN);
         return ResponseEntity.ok(null);
@@ -271,7 +271,7 @@ public class PostController {
     @PostMapping("admin/posts/{postId}/delete")
     public ResponseEntity<Void> deleteByAdmin(
             @PathVariable ObjectId postId
-    ) throws PostNotFoundException, UserNotFoundException {
+    ) throws PostNotFoundException {
 
         postService.changeVisibility(postId, Visibility.DELETED);
         return ResponseEntity.ok(null);
