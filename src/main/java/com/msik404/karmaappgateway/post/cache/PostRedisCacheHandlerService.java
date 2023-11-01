@@ -11,6 +11,7 @@ import com.msik404.karmaappgateway.post.dto.PostWithImageDataDto;
 import com.msik404.karmaappgateway.post.dto.ScrollPosition;
 import com.msik404.karmaappgateway.post.dto.Visibility;
 import com.msik404.karmaappgateway.post.exception.PostNotFoundException;
+import com.msik404.karmaappgateway.user.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.lang.NonNull;
@@ -140,7 +141,7 @@ public class PostRedisCacheHandlerService {
      */
     public boolean loadPostDataToCacheIfPossible(
             @NonNull ObjectId postId
-    ) throws PostNotFoundException {
+    ) throws PostNotFoundException, UserNotFoundException {
 
         try {
             PostWithImageDataDto post = grpcService.findByPostId(postId);

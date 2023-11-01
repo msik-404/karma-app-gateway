@@ -192,7 +192,7 @@ public class PostService {
     public void changeVisibility(
             @NonNull ObjectId postId,
             @NonNull Visibility visibility
-    ) throws InsufficientRoleException, PostNotFoundException {
+    ) throws InsufficientRoleException, PostNotFoundException, UserNotFoundException {
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         Collection<? extends GrantedAuthority> clientAuthorities = authentication.getAuthorities();
