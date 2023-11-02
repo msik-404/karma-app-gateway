@@ -4,7 +4,7 @@ and communicate with other microservices to perform operations. karma-app-gatewa
 
 Check out other karma-app microservices:
 - [karma-app-posts](https://github.com/msik-404/karma-app-posts)
-- [karma-app-users](https://github.com/msik-404/karma-app-users/tree/main)
+- [karma-app-users](https://github.com/msik-404/karma-app-users)
 
 # Technologies used
 - Java 21
