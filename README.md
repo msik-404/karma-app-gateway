@@ -27,8 +27,9 @@ constraints need to be met to build valid message.
 # Features
 
 ### Rest endpoints
-All endpoints reside in [PostController](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/PostController.java)
-and [UserController](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/user/UserController.java)
+All endpoints reside in [PostController](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/PostController.java),
+[UserController](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/user/UserController.java)
+and [AuthController](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/auth/AuthController.java)
 
 These are all the supported endpoints.
 
