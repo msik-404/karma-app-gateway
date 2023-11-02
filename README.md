@@ -32,7 +32,7 @@ and [UserController](https://github.com/msik-404/karma-app-gateway/blob/main/src
 
 These are all the supported endpoints.
 
-#### [PostController.class](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/PostController.java)
+#### [PostController.java](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/PostController.java)
 
 ```
 GET /guest/posts?size=OPTIONAL_DEFAULT_100&post_id=OPTIONAL&karma_score=OPTIONAL=username=OPTIONAL
@@ -221,7 +221,7 @@ Post will get cached if one of these two things take place at the time of activa
 - first: cache is not yet full.
 - second: post karma score after unrating is higher than the lowest score of a post in cache.
 
-#### [UserController](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/user/UserController.java)
+#### [UserController.java](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/user/UserController.java)
 
 ```
 PUT /user/users
@@ -259,7 +259,7 @@ Request json:
 }
 ```
 
-#### [AuthController](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/auth/AuthController.java)
+#### [AuthController.java](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/auth/AuthController.java)
 ```
 POST /register
 ```
@@ -318,6 +318,60 @@ and [GrpcStatusException](https://github.com/msik-404/karma-app-gateway/blob/mai
 
 karma-app-gateway has [decoding class](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/grpc/client/encoding/ExceptionDecoder.java)
 implemented, which takes encoded message and returns appropriate exception.
+
+### Cache
+As one could notice from endpoint documentation this microservice uses caching. Cache can be used for fetching any subset
+of [MAX_CACHED_POSTS](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L37) 
+posts as long as no filtering rules are set (filter by username or visibility other 
+than active). Each post state change which is persisted in database is being reflected to the cache. 
+That is post score and visibility changes. Rating posts high enough might make them present in cache. Making post
+visibility hidden or deleted evicts it from cache if it was cached prior. Every post get cached if max cached posts count
+is not yet reached.
+
+#### How is it implemented?
+
+I use several redis structures for this:
+
+`Redis ZSet` (sorted set) for preserving top posts rating (all cached posts). ZSet is set under the [KARMA_SCORE_ZSET_KEY](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L28).
+ZSet contains Keys in [post_key](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L44) 
+format, each [post_key](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L44) 
+has score which is post karmaScore. Score is being updated in real time, so that post score does not become stale.
+[KARMA_SCORE_ZSET_KEY](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L28)
+expires after [TIMEOUT](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L32).
+
+`Redis Hashes` for storing all post non-image data. Each field is [post_key](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L44) 
+and value is json serialized [PostDto.java](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/dto/PostDto.java).
+There are as many fields as there are keys in ZSet.
+This hash is set under the [POST_HASH_KEY](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L29),
+it expires after [TIMEOUT](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L32).
+
+`Redis Strings` is used for storing image data. Each image binary data is found under the [post_image_key](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L49).
+Each [post_image_key](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L49) 
+has expiration time set to [TIMEOUT](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L32)
+which is one hour. [post_image_key](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L49) 
+is set once the image is requested for the first time. Expiration time is reset each 
+time the data is requested within [TIMEOUT](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L32).
+
+I used this [redis.conf](https://github.com/msik-404/karma-app-gateway/blob/main/redis.conf). The most important things
+about it are that is uses: [AOF and RDB](https://redis.io/docs/management/persistence/).
+
+My cache code uses [Redis pipelining](https://redis.io/docs/manual/pipelining/) when more than single operation needs to 
+be preformed. This improves efficiency, by reducing required number of request.
+
+Because ZSet [ZRANGE](https://redis.io/commands/zrange/) cannot be trivially used for getting key-set paginated values I
+had to come up with a solution. If reader is interested in details look inside [findNextNCached](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L195)
+method code and comments.
+
+#### Note
+Maximum amount of posts cached can exceed [MAX_CACHED_POSTS](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L37)
+this is because of the second rule for caching during rating posts positively:
+
+```
+Post will get cached if one of these two things take place at the time of rating the post:
+- first: cache is not yet full.
+- second: post karma score after rating is higher than the lowest score of a post in cache.
+```
+But this would be actually rare because all cached posts get expired after [TIMEOUT](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L32).
 
 # Environment variables
 Backend requires four environment variables to be set:
