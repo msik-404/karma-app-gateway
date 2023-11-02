@@ -335,23 +335,20 @@ I use several redis structures for this:
 
 - [Redis sorted sets](https://redis.io/docs/data-types/sorted-sets/) (ZSet) for preserving top posts rating (all cached posts). ZSet is set under the [KARMA_SCORE_ZSET_KEY](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L28).
 ZSet contains Keys in [post_key](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L44) 
-format, each [post_key](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L44) 
-has score which is post karmaScore. Score is being updated in real time, so that post score does not become stale.
-[KARMA_SCORE_ZSET_KEY](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L28)
-expires after [TIMEOUT](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L32).
+format, each post_key has score which is post karmaScore. Score is being updated in real time, so that post score does not become stale.
+KARMA_SCORE_ZSET_KEY expires after [TIMEOUT](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L32).
 
-- [Redis hashes](https://redis.io/docs/data-types/hashes/) for storing all post non-image data. Each field is [post_key](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L44) 
+- [Redis hashes](https://redis.io/docs/data-types/hashes/) for storing all post non-image data. Each field is post_key 
 and value is json serialized [PostDto.java](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/dto/PostDto.java).
 There are as many fields as there are keys in ZSet.
 This hash is set under the [POST_HASH_KEY](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L29),
-it expires after [TIMEOUT](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L32).
+it expires after TIMEOUT.
 
 - [Redis Strings](https://redis.io/docs/data-types/strings/) are used for storing image data. Each image binary data is found under the [post_image_key](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L49).
 Each [post_image_key](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L49) 
-has expiration time set to [TIMEOUT](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L32)
-which is one hour. [post_image_key](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L49) 
+has expiration time set to TIMEOUT which is one hour. [post_image_key](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L49) 
 is set once the image is requested for the first time. Expiration time is reset each 
-time the data is requested within [TIMEOUT](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L32).
+time the data is requested within TIMEOUT.
 
 I used this [redis.conf](https://github.com/msik-404/karma-app-gateway/blob/main/redis.conf). The most important things
 about it are that is uses: [AOF and RDB](https://redis.io/docs/management/persistence/).
