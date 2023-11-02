@@ -420,7 +420,8 @@ If one would like to build the project with running the tests, one must have doc
 Docker is required to run tests locally because I use [Testcontainers for Java](https://java.testcontainers.org/).
 
 Code that is directly communicating with redis is fully tested with integration tests.
-Test reside in [src/test](https://github.com/msik-404/karma-app-gateway/tree/main/src/test)
+Test reside in [src/test](https://github.com/msik-404/karma-app-gateway/tree/main/src/test).
+The rest of the code was tested manually using postman.
 
 # Starting the microservice | deployment for testing
 To run entire application check out [karma-app-microservices](https://github.com/msik-404?tab=repositories)
