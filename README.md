@@ -32,7 +32,11 @@ and [UserController](https://github.com/msik-404/karma-app-gateway/blob/main/src
 
 These are all the supported endpoints.
 
-#### GET guest/posts?size=OPTIONAL_DEFAULT_100&post_id=OPTIONAL&karma_score=OPTIONAL=username=OPTIONAL
+#### [PostController.class](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/PostController.java)
+
+```
+GET guest/posts?size=OPTIONAL_DEFAULT_100&post_id=OPTIONAL&karma_score=OPTIONAL=username=OPTIONAL
+```
 This endpoint is available for all users, that is: not logged-in users, logged-in users, mods and admins. It is used
 for getting posts, size is the amount of posts to get, karma_score and post_id is used for pagination. Simply set them 
 to values of last previously fetched post, and you will get size amount of next posts. Argument username is used for
@@ -67,13 +71,18 @@ Response json:
 For testing purposes I made that each post has not only link for image but also links for all endpoints which can change
 it state. That is: rate positively, rate negatively, unrate, change visibility by user, change visibility by mod and admin.
 In real case scenario I would only leave link for image, to reduce overhead.
-#### GET user/posts?size=OPTIONAL_DEFAULT_100&post_id=OPTIONAL&karma_score=OPTIONAL&active=OPTIONAL_BOOL&hidden=OPTIONAL_BOOL
+
+```
+GET user/posts?size=OPTIONAL_DEFAULT_100&post_id=OPTIONAL&karma_score=OPTIONAL&active=OPTIONAL_BOOL&hidden=OPTIONAL_BOOL
+```
 This endpoint is similar to guest one, but returns only posts created by logged-in user, therefore it requires user to
 be logged-in. Arguments active and hidden can be set to true, if so both active and hidden posts are displayed. Of course
 user can also set only active=true to see only active posts or only hidden=true to see only hidden posts. If bot active
 and hidden are not set, by default only active posts are returned. This endpoint does not use cache.
 
-#### GET user/posts/ratings?size=OPTIONAL_DEFAULT_100&post_id=OPTIONAL&karma_scored=OPTIONAL&username=OPTIONAL
+```
+GET user/posts/ratings?size=OPTIONAL_DEFAULT_100&post_id=OPTIONAL&karma_scored=OPTIONAL&username=OPTIONAL
+```
 This endpoint is used for getting information on how logged-in user rated posts. This works in the same way as guest/posts
 and user/posts but for each post from these endpoints, it returns information on how logged-in user rated these posts.
 Null if given post was not rated, true if was rated positively and false if was rated negatively. The purpose of this 
@@ -95,25 +104,134 @@ Response json:
 
 ```
 
-#### GET mod/posts?size=OPTIONAL_DEFAULT_100&post_id=OPTIONAL&karma_score=OPTIONAL=username=OPTIONAL&active=OPTIONAL_BOOL&hidden=OPTIONAL_BOOL
-This endpoint works similar to guest/posts but mod user can also see hidden posts. User is required to be logged-in and
+```
+GET mod/posts?size=OPTIONAL_DEFAULT_100&post_id=OPTIONAL&karma_score=OPTIONAL=username=OPTIONAL&active=OPTIONAL_BOOL&hidden=OPTIONAL_BOOL
+```
+This endpoint works similar to `guest/posts` but mod user can also see hidden posts. User is required to be logged-in and
 have mod or admin role.
 
-#### GET mod/posts/ratings?size=OPTIONAL_DEFAULT_100&post_id=OPTIONAL&karma_score=OPTIONAL=username=OPTIONAL&active=OPTIONAL_BOOL&hidden=OPTIONAL_BOOL
-This endpoint works similar to user/posts/ratings but mod user can also see hidden posts. User is required to be 
+```
+GET mod/posts/ratings?size=OPTIONAL_DEFAULT_100&post_id=OPTIONAL&karma_score=OPTIONAL=username=OPTIONAL&active=OPTIONAL_BOOL&hidden=OPTIONAL_BOOL
+```
+This endpoint works similar to `user/posts/ratings` but mod user can also see hidden posts. User is required to be 
 logged-in and have mod or admin role.
 
-#### GET admin/posts?size=OPTIONAL_DEFAULT_100&post_id=OPTIONAL&karma_score=OPTIONAL=username=OPTIONAL&active=OPTIONAL_BOOL&hidden=OPTIONAL_BOOL&deleted=OPTIONAL_BOOL
-This endpoint works similar to mod/posts but admin user can also see deleted posts. User is required to be logged-in and
+```
+GET admin/posts?size=OPTIONAL_DEFAULT_100&post_id=OPTIONAL&karma_score=OPTIONAL=username=OPTIONAL&active=OPTIONAL_BOOL&hidden=OPTIONAL_BOOL&deleted=OPTIONAL_BOOL
+```
+This endpoint works similar to `mod/posts` but admin user can also see deleted posts. User is required to be logged-in and
 have admin role.
 
-#### GET admin/posts/ratings?size=OPTIONAL_DEFAULT_100&post_id=OPTIONAL&karma_score=OPTIONAL=username=OPTIONAL&active=OPTIONAL_BOOL&hidden=OPTIONAL_BOOL&deleted=OPTIONAL_BOOL
-This endpoint works similar to mod/posts/ratings but admin user can also see deleted posts. User is required to be
+```
+GET admin/posts/ratings?size=OPTIONAL_DEFAULT_100&post_id=OPTIONAL&karma_score=OPTIONAL=username=OPTIONAL&active=OPTIONAL_BOOL&hidden=OPTIONAL_BOOL&deleted=OPTIONAL_BOOL
+```
+This endpoint works similar to `mod/posts/ratings` but admin user can also see deleted posts. User is required to be
 logged-in and have admin role.
 
-#### GET guests/posts/{postId}/image
-This endpoint is used for getting image of a given post. If post is not found http error 404 with appropriate message is
+```
+GET guests/posts/{postId}/image
+```
+This endpoint is used for getting image of a given post. If post is not found HTTP error 404 with appropriate message is
 returned. postId is SOME_24_CHAR_HEX_STRING. Image is returned as byte array with media type IMAGE_JPEG.
+
+```
+POST user/posts
+```
+This endpoint is used for creating posts. User needs to be logged-in to use it. It uses `multipart/form-data` 
+because image data is binary.
+
+The first part of the request is `Key: json_data` and `Value: JSON_BODY` with content type `application/json`.
+
+JSON BODY:
+```
+{
+    "text": "SOME_POST_TEXT",
+    "headline": "SOME_POST_HEADLINE"
+}
+```
+Both text and headline are optional, but json_data key must be set.
+
+The second part of the request is `Key: image` and `Value: BINARY_IMAGE_DATA` with HTTP `<input type="file">`.
+
+```
+POST user/posts/{postId}/rate?is_positive=TRUE|FALSE
+```
+This endpoint is used for rating posts. User needs to be logged-in to use it. Argument is_positive is required. 
+postId is SOME_24_CHAR_HEX_STRING. If post is not found `HTTP code 404 Not Found` response with appropriate message is returned.
+If post gets rated by the same user, second time the same way, nothing will happen and user will get `HTTP code 200 OK` 
+response. Theoretically Rating not found exception could be thrown but it shouldn't happen because rating operation takes 
+place in transaction. This endpoint uses cache. Post will get cached if one of these two things take place at the time of 
+rating the post: 
+- first: cache is not yet full.
+- second: post karma score after rating is higher than the lowest score of a post in cache.
+
+```
+POST user/posts/{postId}/unrate
+```
+This endpoint is used for unrating. User needs to be logged-in to use it. If post is not found `HTTP code 404 Not Found` 
+with appropriate message is returned. If post was not rated by the user, nothing happens and client gets 
+`HTTP code 200 OK` response. postId is SOME_24_CHAR_HEX_STRING. This endpoint uses cache. Post will get cached if one 
+of these two things take place at the time of rating the post:
+- first: cache is not yet full.
+- second: post karma score after unrating is higher than the lowest score of a post in cache.
+
+```
+POST user/posts/{postId}/hide
+```
+This endpoint is used for hiding owned posts. User needs to be logged-in to use it and be its creator.
+postId is SOME_24_CHAR_HEX_STRING. If post is not found `HTTP code 404 Not Found` response is returned with appropriate 
+message. If user is not the owner `HTTP code 401 Unauthorized` response is returned. This exception is also returned when 
+posts visibility is set to deleted(only admin can change deleted visibility). This endpoint uses cache. If post before 
+this operation was cached, after this operation it will get evicted from cache. Because underlying method can also be 
+used for changing visibility to active, underneath entire post fetch takes place, which might throw user not found 
+exception, because cached posts need to have username, and username needs to be fetched by userId. Practically this 
+exception will never be thrown.
+
+```
+POST user/posts/{postId}/unhide
+```
+This endpoint is almost identical to `user/posts/{postId}/hide` the only difference is that it changes visibility to 
+active (if it was not set to deleted prior).
+
+```
+POST user/posts/{postId}/delete
+```
+This endpoint is almost identical to `user/posts/{postId}/hide` the only difference is that it changes visibility to
+deleted.
+
+```
+POST mod/posts/{postId}/hide
+```
+This endpoint enables mod to hide every active post. If post is not found `HTTP code 404 Not Found` response is returned 
+with appropriate message. If post visibility was set to deleted `HTTP code 401 Unauthorized` response with appropriate 
+message is returned. This endpoint uses cache. If post before this operation was cached, after this operation it will 
+get evicted from cache.
+
+```
+POST admin/posts/{postId}/delete
+```
+This endpoint is similar to `mod/posts/{postId}/hide` the only difference is that it changes visibility to deleted and 
+requires the user to be admin.
+
+```
+POST admin/posts/{postId}/activate
+```
+This endpoint is similar to `admin/posts/{postId}/delete` the only difference is that it changes visibility to active.
+Post will get cached if one of these two things take place at the time of activating:
+- first: cache is not yet full.
+- second: post karma score after unrating is higher than the lowest score of a post in cache.
+
+#### [UserController](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/user/UserController.java)
+
+```
+PUT user/users
+```
+Request json:
+```
+{
+    "firstName": 
+}
+```
 
 ### Exception encoding
 When some exception which is not critical is thrown on the backend side, it is being encoded and passed with appropriate
@@ -131,7 +249,7 @@ karma-app-gateway has [decoding class](https://github.com/msik-404/karma-app-gat
 implemented, which takes encoded message and returns appropriate exception.
 
 # Environment variables
-Backend requires two environment variables to be set:
+Backend requires four environment variables to be set:
 - KARMA_APP_GATEWAY_REDIS_HOSTNAME
 - KARMA_APP_GATEWAY_SECRET
 - KARMA_APP_POSTS_HOST
