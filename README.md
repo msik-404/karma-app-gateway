@@ -303,6 +303,13 @@ Request json:
 }
 ```
 
+Response json:
+```
+{
+    "jwt": "JWT_STRING"
+}
+```
+
 If user fails to log-in `HTTP status code 401 Unauthorized` response with appropriate message is returned.
 
 ### Exception encoding
