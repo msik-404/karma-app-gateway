@@ -332,7 +332,7 @@ is not yet reached.
 
 I use several redis structures for this:
 
-- [Redis sorted sets](https://redis.io/docs/data-types/sorted-sets/) for preserving top posts rating (all cached posts). ZSet is set under the [KARMA_SCORE_ZSET_KEY](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L28).
+- [Redis sorted sets](https://redis.io/docs/data-types/sorted-sets/) (ZSet) for preserving top posts rating (all cached posts). ZSet is set under the [KARMA_SCORE_ZSET_KEY](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L28).
 ZSet contains Keys in [post_key](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L44) 
 format, each [post_key](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L44) 
 has score which is post karmaScore. Score is being updated in real time, so that post score does not become stale.
