@@ -469,3 +469,11 @@ and then use:
 ```
 docker compose up
 ```
+
+# Further development
+- Unfortunately this app does not have frontend yet. Maybe in the future I will create front for it. Because of the lack
+of front, CORS is not configured. 
+- Update post text or headline.
+- Search posts by text option.
+- Add comment section feature.
+- Maybe some sort of subreddits feature.
