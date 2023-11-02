@@ -429,7 +429,7 @@ Test reside in [src/test](https://github.com/msik-404/karma-app-gateway/tree/mai
 The rest of the code was tested manually using postman.
 
 # Starting the microservice | deployment for testing
-To run entire application check out [karma-app-microservices](https://github.com/msik-404?tab=repositories)
+To run entire application check out [karma-app-microservices](https://github.com/msik-404/karma-app-microservices)
 which is repository with code for starting all microservices.
 
 ## Starting only karma-app-gateway
