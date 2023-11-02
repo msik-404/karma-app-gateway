@@ -26,14 +26,14 @@ constraints need to be met to build valid message.
 
 # Features
 
-### Rest endpoints
+## Rest endpoints
 All endpoints reside in [PostController](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/PostController.java),
 [UserController](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/user/UserController.java)
 and [AuthController](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/auth/AuthController.java)
 
 These are all the supported endpoints.
 
-#### [PostController.java](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/PostController.java)
+### [PostController.java](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/PostController.java)
 
 ```
 GET /guest/posts?size=OPTIONAL_DEFAULT_100&post_id=OPTIONAL&karma_score=OPTIONAL=username=OPTIONAL
@@ -222,7 +222,7 @@ Post will get cached if one of these two things take place at the time of activa
 - first: cache is not yet full.
 - second: post karma score after unrating is higher than the lowest score of a post in cache.
 
-#### [UserController.java](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/user/UserController.java)
+### [UserController.java](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/user/UserController.java)
 
 ```
 PUT /user/users
@@ -260,7 +260,7 @@ Request json:
 }
 ```
 
-#### [AuthController.java](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/auth/AuthController.java)
+### [AuthController.java](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/auth/AuthController.java)
 ```
 POST /register
 ```
@@ -278,7 +278,7 @@ Request json:
 }
 ```
 
-### How to access non-guest endpoints
+#### How to access non-guest endpoints
 
 ```
 POST /login
@@ -312,7 +312,7 @@ Response json:
 
 If user fails to log-in `HTTP status code 401 Unauthorized` response with appropriate message is returned.
 
-### Exception encoding
+## Exception encoding
 When some exception which is not critical is thrown on the backend side, it is being encoded and passed with appropriate
 grpc code to the caller. Each exception has its unique identifier. With this it can be decoded on the caller side.
 In this setup client side can use the same exception classes as backend.
@@ -327,7 +327,7 @@ and [GrpcStatusException](https://github.com/msik-404/karma-app-gateway/blob/mai
 karma-app-gateway has [decoding class](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/grpc/client/encoding/ExceptionDecoder.java)
 implemented, which takes encoded message and returns appropriate exception.
 
-### Cache
+## Cache
 As one could notice from endpoint documentation this microservice uses caching. Cache can be used for fetching any subset
 of [MAX_CACHED_POSTS](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L37) 
 posts as long as no filtering rules are set (filter by username or visibility other 
@@ -396,7 +396,7 @@ KARMA_APP_GATEWAY_SECRET=BARDZO-POTĘŻNY-SEKRET-JAKI-DŁUGI
 KARMA_APP_POSTS_HOST=karma-app-posts
 KARMA_APP_USERS_HOST=karma-app-users
 ```
-#### Important notes
+## Important notes
 KARMA_APP_GATEWAY_SECRET should have at least 32 bytes.
 
 KARMA_APP_POSTS_HOST AND KARMA_APP_USERS_HOST should be the same as the ones in
@@ -428,7 +428,7 @@ The rest of the code was tested manually using postman.
 To run entire application check out [karma-app-microservices](https://github.com/msik-404?tab=repositories)
 which is repository with code for starting all microservices.
 
-#### Starting only karma-app-gateway
+## Starting only karma-app-gateway
 To start just karma-app-gateway, one would also need to have already running [karma-app-posts](https://github.com/msik-404/karma-app-posts)
 and [karma-app-users](https://github.com/msik-404/karma-app-users/tree/main), one can inspect readme's for information on
 how to do this.
@@ -437,7 +437,7 @@ In this repository one can find [docker-compose-yaml](https://github.com/msik-40
 
 To start the microservice one should use provided bash scripts but pure docker can also be used.
 
-### Bash scripts
+## Bash scripts
 Bash scripts can be found under [scripts](https://github.com/msik-404/karma-app-gateway/tree/main/scripts) folder.
 
 Starting microservice: [start.sh](https://github.com/msik-404/karma-app-gateway/blob/main/scripts/start.sh)
@@ -461,7 +461,7 @@ and then use:
 ./clean.sh
 ```
 
-### Pure docker method
+## Pure docker method
 ```
 docker compose up
 ```
