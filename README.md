@@ -2,6 +2,10 @@
 Gateway microservice for karma-app microservices version. karma-app-gateway is http server which exposes rest endpoints 
 and communicate with other microservices to perform operations. karma-app-gateway support caching by using redis.
 
+Check out other karma-app microservices:
+- [karma-app-posts](https://github.com/msik-404/karma-app-posts)
+- [karma-app-users](https://github.com/msik-404/karma-app-users/tree/main)
+
 # Technologies used
 - Java 21
 - Redis
