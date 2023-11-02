@@ -2,6 +2,9 @@ package com.msik404.karmaappgateway.user;
 
 import com.msik404.karmaappgateway.user.dto.UserUpdateRequestWithAdminPrivilege;
 import com.msik404.karmaappgateway.user.dto.UserUpdateRequestWithUserPrivilege;
+import com.msik404.karmaappgateway.user.exception.DuplicateEmailException;
+import com.msik404.karmaappgateway.user.exception.DuplicateUnexpectedFieldException;
+import com.msik404.karmaappgateway.user.exception.DuplicateUsernameException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
@@ -19,7 +22,8 @@ public class UserController {
 
     @PutMapping("user/users")
     public ResponseEntity<UserUpdateRequestWithUserPrivilege> updateWithUserPrivilege(
-            @Valid @RequestBody UserUpdateRequestWithUserPrivilege request) {
+            @Valid @RequestBody UserUpdateRequestWithUserPrivilege request
+    ) throws DuplicateUsernameException, DuplicateEmailException, DuplicateUnexpectedFieldException {
 
         userService.updateWithUserPrivilege(request);
 
@@ -29,7 +33,8 @@ public class UserController {
     @PutMapping("admin/users/{userId}")
     public ResponseEntity<UserUpdateRequestWithAdminPrivilege> updateWithAdminPrivilege(
             @PathVariable ObjectId userId,
-            @Valid @RequestBody UserUpdateRequestWithAdminPrivilege request) {
+            @Valid @RequestBody UserUpdateRequestWithAdminPrivilege request
+    ) throws DuplicateUsernameException, DuplicateEmailException, DuplicateUnexpectedFieldException {
 
         userService.updateWithAdminPrivilege(userId, request);
 
