@@ -14,11 +14,17 @@ There is also [monolith](https://github.com/msik-404/karma-app) version of this 
 - Docker
 - GRPC
 - Java spring
+- spring-boot-starter-web
+- spring-boot-starter-data-redis
+- spring-boot-starter-security
+- spring-boot-starter-validation
+- spring-boot-starter-hateoas
 - spring-boot-starter-test
 - [spring-boot-testcontainers](https://spring.io/blog/2023/06/23/improved-testcontainers-support-in-spring-boot-3-1)
 - junit-jupiter
 - [grpc-java](https://github.com/grpc/grpc-java)
 - [protovalidate-java](https://github.com/bufbuild/protovalidate-java)
+- [jjwt](https://github.com/jwtk/jjwt#install-jdk-maven)
 - lombok
 
 # Grpc, Protobuf and protovalidate
