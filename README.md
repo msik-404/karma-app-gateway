@@ -12,7 +12,7 @@ There is also [monolith](https://github.com/msik-404/karma-app) version of this 
 - Java 21
 - Redis
 - Docker
-- GRPC
+- gRPC
 - Java spring
 - spring-boot-starter-web
 - spring-boot-starter-data-redis
@@ -27,9 +27,10 @@ There is also [monolith](https://github.com/msik-404/karma-app) version of this 
 - [jjwt](https://github.com/jwtk/jjwt#install-jdk-maven)
 - lombok
 
-# Grpc, Protobuf and protovalidate
-Thanks to the use of grpc all available service methods and messages can be
-inspected inside [proto file](https://github.com/msik-404/karma-app-posts/blob/main/src/main/proto/karma_app_posts.proto).
+# gRPC, Protobuf and protovalidate
+[gRPC](https://grpc.io/) is a modern open source high performance Remote Procedure Call (RPC) framework that can run in 
+any environment. gRPC simplifies microservices API implementation and latter the usage of the API. gRPC is self-documenting
+all available service methods and message structures can be found inside [proto file](https://github.com/msik-404/karma-app-posts/blob/main/src/main/proto/karma_app_posts.proto).
 
 In this project to help with message validation I use: [protovalidate-java](https://github.com/bufbuild/protovalidate-java).
 This project significantly simplifies validation of messages and reduces the time required to build stable system.
@@ -326,7 +327,7 @@ If user fails to log-in `HTTP status code 401 Unauthorized` response with approp
 
 ## Exception encoding
 When some exception which is not critical is thrown on the backend side, it is being encoded and passed with appropriate
-grpc code to the caller. Each exception has its unique identifier. With this it can be decoded on the caller side.
+gRPC code to the caller. Each exception has its unique identifier. With this it can be decoded on the caller side.
 In this setup client side can use the same exception classes as backend.
 
 Simple [encoding class](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/grpc/client/encoding/ExceptionEncoder.java)
