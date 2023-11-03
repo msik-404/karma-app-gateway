@@ -6,6 +6,8 @@ Check out other karma-app microservices:
 - [karma-app-posts](https://github.com/msik-404/karma-app-posts)
 - [karma-app-users](https://github.com/msik-404/karma-app-users)
 
+There is also [monolith](https://github.com/msik-404/karma-app) version of this app which uses PostgreSQL instead of MongoDB.
+
 # Technologies used
 - Java 21
 - Redis
