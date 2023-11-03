@@ -29,7 +29,7 @@ There is also [monolith](https://github.com/msik-404/karma-app) version of this 
 
 # gRPC, Protobuf and protovalidate
 [gRPC](https://grpc.io/) is a modern open source high performance Remote Procedure Call (RPC) framework that can run in 
-any environment. gRPC simplifies microservices API implementation and latter the usage of the API. gRPC is self-documenting,
+any environment. gRPC simplifies microservices API implementation and later the usage of the API. gRPC is self-documenting,
 all available service methods and message structures can be found inside [proto file](https://github.com/msik-404/karma-app-posts/blob/main/src/main/proto/karma_app_posts.proto).
 
 In this project to help with message validation I use: [protovalidate-java](https://github.com/bufbuild/protovalidate-java).
