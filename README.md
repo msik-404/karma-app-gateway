@@ -365,8 +365,7 @@ This hash is set under the [POST_HASH_KEY](https://github.com/msik-404/karma-app
 it expires after TIMEOUT.
 
 - [Redis Strings](https://redis.io/docs/data-types/strings/) are used for storing image data. Each image binary data is found under the [post_image_key](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L49).
-Each [post_image_key](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L49) 
-has expiration time set to TIMEOUT which is one hour. [post_image_key](https://github.com/msik-404/karma-app-gateway/blob/main/src/main/java/com/msik404/karmaappgateway/post/cache/PostRedisCache.java#L49) 
+Each post_image_key has expiration time set to TIMEOUT which is one hour. post_image_key 
 is set once the image is requested for the first time. Expiration time is reset each 
 time the data is requested within TIMEOUT.
 
