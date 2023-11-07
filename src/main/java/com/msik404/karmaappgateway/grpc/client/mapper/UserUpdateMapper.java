@@ -2,6 +2,7 @@ package com.msik404.karmaappgateway.grpc.client.mapper;
 
 import java.util.Optional;
 
+import com.msik404.grpc.mongo.id.ProtoObjectId;
 import com.msik404.karmaappgateway.grpc.client.exception.UnsupportedRoleException;
 import com.msik404.karmaappgateway.user.dto.UserUpdateRequestWithAdminPrivilege;
 import com.msik404.karmaappgateway.user.dto.UserUpdateRequestWithUserPrivilege;
@@ -24,7 +25,7 @@ public class UserUpdateMapper {
     ) {
 
         var builder = UpdateUserRequest.newBuilder();
-        builder.setUserId(MongoObjectIdMapper.mapToUsersMongoObjectId(userId));
+        builder.setUserId(ProtoObjectId.newBuilder().setHexString(userId.toHexString()).build());
 
         boolean somethingWasSet = false;
 

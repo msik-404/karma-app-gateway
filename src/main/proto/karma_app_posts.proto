@@ -8,135 +8,265 @@ option java_outer_classname = "KarmaAppPostsProtos";
 
 import "google/protobuf/empty.proto";
 import "buf/validate/validate.proto";
+import "mongo_object_id.proto";
 
+/**
+ * Service for fetching, creating and changing state of posts.
+ */
 service Posts {
 
+  /** Used for post creation. New posts are active by default and have karma score of zero. */
   rpc createPost(CreatePostRequest) returns (google.protobuf.Empty) {}
+
+  /**
+   * Used for post rating. This operation is idempotent. Returns encoded PostNotFoundException, RatingNotFoundException
+   * on failure.
+   */
   rpc ratePost(RatePostRequest) returns (ChangedRatingResponse) {}
+
+  /** Used for post unrating. This operation is idempotent. Returns encoded PostNotFoundException on failure. */
   rpc unratePost(UnratePostRequest) returns (ChangedRatingResponse) {}
+
+  /**
+   * Used for changing post visibility. This operation is idempotent. Returns encoded PostNotFoundException,
+   * UnsupportedVisibilityException on failure.
+   */
   rpc changePostVisibility(ChangePostVisibilityRequest) returns (google.protobuf.Empty) {}
+
+  /**
+   * Used for fetching key-set: (karmaScore, postId) paginated posts. returns encoded UnsupportedVisibilityException
+   * on failure.
+   */
   rpc findPosts(PostsRequest) returns (PostsResponse) {}
+
+  /**
+   * Used for fetching key-set: (karmaScore, postId) paginated posts of a given creator user. Returns encoded
+   * UnsupportedVisibilityException on failure.
+   */
   rpc findPostsWithCreatorId(PostsWithCreatorIdRequest) returns (PostsResponse) {}
-  rpc findImage(ImageRequest) returns (ImageResponse) {}
+
+  /** Used for fetching image of a given post by postId. Encodes ImageNotFoundException on failure. */
+  rpc findImage(protomongo.ProtoObjectId) returns (ImageResponse) {}
+
+  /**
+   * Used for fetching key-set: (karmaScore, postId) paginated post ratings of a given client user.
+   * Ratings are returned in the same order as rpc findPosts. Returns encoded UnsupportedVisibilityException on failure.
+   */
   rpc findPostRatings(PostRatingsRequest) returns (PostRatingsResponse) {}
+
+  /**
+   * Used for fetching key-set: (karmaScore, postId) paginated ratings of a given client user of posts of a given
+   * creator user. Ratings are returned in the same order as rpc findPostsWithCreatorId. Returns encoded
+   * UnsupportedVisibilityException.
+   */
   rpc findPostRatingsWithCreatorId(PostRatingsWithCreatorIdRequest) returns (PostRatingsResponse) {}
-  rpc findPostCreatorId(PostCreatorIdRequest) returns (PostCreatorIdResponse) {}
-  rpc findPostWithImageData(PostRequest) returns (PostWithImageData) {}
-  rpc findPostVisibility(MongoObjectId) returns (PostVisibilityResponse) {}
+
+  /** Used for finding creator userId of a given post by postId. Returns encoded PostNotFoundException. */
+  rpc findPostCreatorId(protomongo.ProtoObjectId) returns (protomongo.ProtoObjectId) {}
+
+  /** Used for fetching post with it's image (if present) by postId. Returns encoded PostNotFoundException. */
+  rpc findPostWithImageData(protomongo.ProtoObjectId) returns (PostWithImageData) {}
+
+  /** Used for finding visibility of a given post by postId. Returns encoded PostNotFoundException. */
+  rpc findPostVisibility(protomongo.ProtoObjectId) returns (PostVisibilityResponse) {}
 
 }
 
-message MongoObjectId {
-  optional string hexString = 1 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
-}
-
+/**
+ * Represents request for creating new post.
+ */
 message CreatePostRequest {
-  optional MongoObjectId user_id = 1 [(buf.validate.field).required = true];
-  optional string headline = 2;
-  optional string text = 3;
-  optional bytes image_data = 4;
+  optional protomongo.ProtoObjectId user_id = 1 [(buf.validate.field).required = true]; /** Required id of a user. */
+  optional string headline = 2; /** Optional post headline. */
+  optional string text = 3; /** Optional post text. */
+  optional bytes image_data = 4; /** Optional image data. */
 }
 
+/**
+ * Represents request for rating existing post by a client user.
+ */
 message RatePostRequest {
-  optional MongoObjectId post_id = 1 [(buf.validate.field).required = true];
-  optional MongoObjectId user_id = 2 [(buf.validate.field).required = true];
+
+  /** Required id of the post. */
+  optional protomongo.ProtoObjectId post_id = 1 [(buf.validate.field).required = true];
+
+  /** Required id of the user. */
+  optional protomongo.ProtoObjectId user_id = 2 [(buf.validate.field).required = true];
+
+  /** Required value indicating whether rating is positive. */
   optional bool is_positive = 3 [(buf.validate.field).required = true];
+
 }
 
+/**
+ * Represents updated score of a post.
+ */
 message ChangedRatingResponse {
-  optional int32 delta = 1;
+  optional int32 delta = 1 [(buf.validate.field).required = true]; /** Required updated value of karma Score. */
 }
 
+/**
+ * Represents request for unrating of existing post by a client user.
+ */
 message UnratePostRequest {
-  optional MongoObjectId post_id = 1 [(buf.validate.field).required = true];
-  optional MongoObjectId user_id = 2 [(buf.validate.field).required = true];
+  optional protomongo.ProtoObjectId post_id = 1 [(buf.validate.field).required = true]; /** Required id of the post. */
+  optional protomongo.ProtoObjectId user_id = 2 [(buf.validate.field).required = true]; /** Required id of the user. */
 }
 
+/**
+ * Represents all accepted visibility states of a post.
+ */
 enum PostVisibility {
-  VIS_ACTIVE = 0;
-  VIS_HIDDEN = 1;
-  VIS_DELETED = 2;
+  VIS_ACTIVE = 0; /** Active post. */
+  VIS_HIDDEN = 1; /** Hidden post. */
+  VIS_DELETED = 2; /** Deleted post. */
 }
 
+/**
+ * Represents request for changing visibility state of a given post.
+ */
 message ChangePostVisibilityRequest {
-  optional MongoObjectId post_id = 1 [(buf.validate.field).required = true];
-  optional PostVisibility visibility = 2 [(buf.validate.field).required = true];
+  optional protomongo.ProtoObjectId post_id = 1 [(buf.validate.field).required = true]; /** Required id of the post. */
+  optional PostVisibility visibility = 2 [(buf.validate.field).required = true]; /** Required new visibility state. */
 }
 
+/**
+ * Represents object used for performing pagination. It encodes ending position of the previous post fetch.
+ */
 message ScrollPosition {
+
+  /** Required karma score of the last post in the previous post fetch. */
   optional uint64 karma_score = 1 [(buf.validate.field).required = true];
-  optional MongoObjectId post_id = 2 [(buf.validate.field).required = true];
+
+  /** Required postId of the last post in the previous post fetch. */
+  optional protomongo.ProtoObjectId post_id = 2 [(buf.validate.field).required = true];
+
 }
 
+/**
+ * Represents request for fetching given amount of posts with requested visibility in requested order, starting from
+ * a given position.
+ */
 message PostsRequest {
+
+  /** Optional amount of the requested posts. Default is 100. */
   optional uint32 size = 1;
+
+  /** Optional starting position. Default is - return first posts. */
   optional ScrollPosition position = 2;
+
+  /** Optional visibility of the requested posts. Default is ACTIVE. */
   repeated PostVisibility visibilities = 3 [(buf.validate.field).repeated.unique = true];
+
+  /** Optional order of the posts. Default is from the posts with highest score to the posts with lowest score. */
   optional bool is_descending = 4;
+
 }
 
+/**
+ * Represents post object.
+ */
 message Post {
-  optional MongoObjectId post_id = 1 [(buf.validate.field).required = true];
-  optional MongoObjectId user_id = 2 [(buf.validate.field).required = true];
-  optional string headline = 3;
-  optional string text = 4;
-  optional sint64 karma_score = 5 [(buf.validate.field).required = true];
-  optional PostVisibility visibility = 6 [(buf.validate.field).required = true];
+  optional protomongo.ProtoObjectId post_id = 1 [(buf.validate.field).required = true]; /** Required id of the post. */
+  optional protomongo.ProtoObjectId user_id = 2 [(buf.validate.field).required = true]; /** Required if of the user. */
+  optional string headline = 3; /** optional headline of the post */
+  optional string text = 4; /** optional text of the post */
+  optional sint64 karma_score = 5 [(buf.validate.field).required = true]; /** Required score of the post */
+  optional PostVisibility visibility = 6 [(buf.validate.field).required = true]; /** Required visibility of the post */
 }
 
+/**
+ * Represents list of posts returned in a from conforming PostsRequest.
+ */
 message PostsResponse {
-  repeated Post posts = 1;
+  repeated Post posts = 1; /** List of posts. */
 }
 
+/**
+ * Represents request similar to PostsRequest with additional constraint that each post must have been created by a
+ * given creator user.
+ */
 message PostsWithCreatorIdRequest {
+
+  /** Optional PostsRequest. If empty, default values are deduced. */
   optional PostsRequest posts_request = 1;
-  optional MongoObjectId creator_id = 2 [(buf.validate.field).required = true];
+
+  /** Required id of the creator user. */
+  optional protomongo.ProtoObjectId creator_id = 2 [(buf.validate.field).required = true];
+
 }
 
-message ImageRequest {
-  optional MongoObjectId post_id = 1 [(buf.validate.field).required = true];
-}
-
+/**
+ * Represents image of a given post. If image does not exist, image_data field is not set.
+ */
 message ImageResponse {
-  optional bytes image_data = 1;
+  optional bytes image_data = 1; /** Optional image data of the given post. */
 }
 
+/**
+ * Represents request for post ratings of a given client user.
+ */
 message PostRatingsRequest {
+
+  /** Optional PostsRequest. If empty, default values are deduced. */
   optional PostsRequest posts_request = 1;
-  optional MongoObjectId client_id = 2 [(buf.validate.field).required = true];
+
+  /** Required id of the client user. */
+  optional protomongo.ProtoObjectId client_id = 2 [(buf.validate.field).required = true];
+
 }
 
+/**
+ * Represents rating of a given post.
+ */
 message PostRating {
-  optional MongoObjectId post_id = 1 [(buf.validate.field).required = true];
-  optional bool is_positive = 2 [(buf.validate.field).required = true];
+
+  /** Required id of the post. */
+  optional protomongo.ProtoObjectId post_id = 1 [(buf.validate.field).required = true];
+
+  /**
+   * Optional boolean value indicating whether rating is positive. Empty value means that post was not rated by the
+   * client user.
+   */
+  optional bool is_positive = 2;
+
 }
 
+/**
+ * Represents list of post ratings returned in a from conforming PostsRatingsRequest.
+ */
 message PostRatingsResponse {
-  repeated PostRating post_ratings = 1;
+  repeated PostRating post_ratings = 1; /** List of post ratings. */
 }
 
+/**
+ * Represents request similar to PostRatingsRequest with additional constraint that each post must have been created
+ * by a given creator user.
+ */
 message PostRatingsWithCreatorIdRequest {
+
+  /** Optional PostRatingsRequest. If empty, default values are deduced. */
   optional PostRatingsRequest posts_ratings_request = 1 [(buf.validate.field).required = true];
-  optional MongoObjectId creator_id = 2 [(buf.validate.field).required = true];
+
+  /** Required id of a creator user */
+  optional protomongo.ProtoObjectId creator_id = 2 [(buf.validate.field).required = true];
+
 }
 
-message PostCreatorIdRequest {
-  optional MongoObjectId post_id = 1 [(buf.validate.field).required = true];
-}
-
-message PostCreatorIdResponse {
-  optional MongoObjectId user_id = 1;
-}
-
-message PostRequest {
-  optional MongoObjectId post_id = 1 [(buf.validate.field).required = true];
-}
-
+/**
+ * Represents post with image data.
+ */
 message PostWithImageData {
-  optional Post post = 1 [(buf.validate.field).required = true];
-  optional bytes image_data = 2;
+  optional Post post = 1 [(buf.validate.field).required = true]; /** Required post. */
+  optional bytes image_data = 2; /** Optional image data. If empty image does not exist */
 }
 
+/**
+ * Represents visibility of a given post.
+ */
 message PostVisibilityResponse {
+
+  /** Required visibility of the given post */
   optional PostVisibility visibility = 1 [(buf.validate.field).required = true];
+
 }

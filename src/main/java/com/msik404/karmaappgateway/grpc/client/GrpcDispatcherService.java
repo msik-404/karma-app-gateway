@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.msik404.grpc.mongo.id.ProtoObjectId;
 import com.msik404.karmaappgateway.exception.RestFromGrpcException;
 import com.msik404.karmaappgateway.grpc.client.encoding.ExceptionDecoder;
 import com.msik404.karmaappgateway.grpc.client.encoding.exception.BadEncodingException;
@@ -27,7 +28,6 @@ import com.msik404.karmaappgateway.user.exception.DuplicateUnexpectedFieldExcept
 import com.msik404.karmaappgateway.user.exception.DuplicateUsernameException;
 import com.msik404.karmaappgateway.user.exception.UserNotFoundException;
 import com.msik404.karmaappposts.grpc.*;
-import com.msik404.karmaappusers.grpc.MongoObjectId;
 import com.msik404.karmaappusers.grpc.*;
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
@@ -131,11 +131,11 @@ public class GrpcDispatcherService {
 
         try {
             // get userId by username from users microservice
-            MongoObjectId creatorId = usersStub.findUserId(creatorIdRequest).get();
+            ProtoObjectId protoCreatorId = usersStub.findUserId(creatorIdRequest).get();
 
             var postsWithCreatorIdRequest = PostsWithCreatorIdRequest.newBuilder()
                     .setPostsRequest(postsRequest)
-                    .setCreatorId(MongoObjectIdMapper.mapToPostsMongoObjectId(creatorId))
+                    .setCreatorId(protoCreatorId)
                     .build();
 
             // get posts by PostsRequest and with given creatorId equal to userId
@@ -163,12 +163,8 @@ public class GrpcDispatcherService {
             // async request for posts to posts microservice
             ListenableFuture<PostsResponse> postsResponseFuture = postsStub.findPostsWithCreatorId(request);
 
-            var usernameRequest = UsernameRequest.newBuilder()
-                    .setUserId(MongoObjectIdMapper.mapToUsersMongoObjectId(request.getCreatorId()))
-                    .build();
-
             // async request for username to users microservice
-            ListenableFuture<UsernameResponse> usernameResponseFuture = usersStub.findUsername(usernameRequest);
+            ListenableFuture<UsernameResponse> usernameResponseFuture = usersStub.findUsername(request.getCreatorId());
 
             // wait for responses
             PostsResponse postsResponse = postsResponseFuture.get();
@@ -196,17 +192,13 @@ public class GrpcDispatcherService {
 
     @NonNull
     public PostWithImageDataDto fetchPostWithImage(
-            @NonNull PostRequest postRequest
+            @NonNull ProtoObjectId protoPostId
     ) throws InternalServerErrorException, BadEncodingException, PostNotFoundException, UserNotFoundException {
 
         try {
-            PostWithImageData post = postsStub.findPostWithImageData(postRequest).get();
+            PostWithImageData post = postsStub.findPostWithImageData(protoPostId).get();
 
-            var usernameRequest = UsernameRequest.newBuilder()
-                    .setUserId(MongoObjectIdMapper.mapToUsersMongoObjectId(post.getPost().getUserId()))
-                    .build();
-
-            UsernameResponse usernameResponse = usersStub.findUsername(usernameRequest).get();
+            UsernameResponse usernameResponse = usersStub.findUsername(post.getPost().getUserId()).get();
 
             return PostDtoMapper.map(post, usernameResponse.getUsername());
 
@@ -241,11 +233,11 @@ public class GrpcDispatcherService {
     ) throws InternalServerErrorException, BadEncodingException, UnsupportedVisibilityException, UserNotFoundException {
 
         try {
-            MongoObjectId creatorIdResponse = usersStub.findUserId(creatorIdRequest).get();
+            ProtoObjectId protoCreatorId = usersStub.findUserId(creatorIdRequest).get();
 
             var request = PostRatingsWithCreatorIdRequest.newBuilder()
                     .setPostsRatingsRequest(ratingsRequest)
-                    .setCreatorId(MongoObjectIdMapper.mapToPostsMongoObjectId(creatorIdResponse))
+                    .setCreatorId(protoCreatorId)
                     .build();
 
             PostRatingsResponse response = postsStub.findPostRatingsWithCreatorId(request).get();
@@ -261,11 +253,11 @@ public class GrpcDispatcherService {
 
     @NonNull
     public byte[] fetchImage(
-            @NonNull ImageRequest request
+            @NonNull ProtoObjectId protoPostId
     ) throws InternalServerErrorException, BadEncodingException, ImageNotFoundException {
 
         try {
-            ImageResponse imageResponse = postsStub.findImage(request).get();
+            ImageResponse imageResponse = postsStub.findImage(protoPostId).get();
 
             return imageResponse.getImageData().toByteArray();
 
@@ -335,14 +327,14 @@ public class GrpcDispatcherService {
     }
 
     @NonNull
-    public String fetchPostCreatorId(
-            @NonNull PostCreatorIdRequest request
+    public ObjectId fetchPostCreatorId(
+            @NonNull ProtoObjectId protoPostId
     ) throws InternalServerErrorException, BadEncodingException, PostNotFoundException {
 
         try {
-            PostCreatorIdResponse response = postsStub.findPostCreatorId(request).get();
+            ProtoObjectId creatorId = postsStub.findPostCreatorId(protoPostId).get();
 
-            return response.getUserId().getHexString();
+            return new ObjectId(creatorId.getHexString());
 
         } catch (InterruptedException ex) {
             throw new InternalServerErrorException(ex.getMessage());
@@ -353,11 +345,11 @@ public class GrpcDispatcherService {
 
     @NonNull
     public Role fetchUserRole(
-            @NonNull UserRoleRequest request
+            @NonNull ProtoObjectId protoUserId
     ) throws InternalServerErrorException, BadEncodingException, UserNotFoundException {
 
         try {
-            UserRoleResponse response = usersStub.findUserRole(request).get();
+            UserRoleResponse response = usersStub.findUserRole(protoUserId).get();
 
             return RoleMapper.map(response.getRole());
 
@@ -415,11 +407,11 @@ public class GrpcDispatcherService {
     }
 
     public Visibility fetchPostVisibility(
-            @NonNull com.msik404.karmaappposts.grpc.MongoObjectId request
+            @NonNull ProtoObjectId protoPostId
     ) throws UnsupportedVisibilityException, PostNotFoundException {
 
         try {
-            PostVisibilityResponse response = postsStub.findPostVisibility(request).get();
+            PostVisibilityResponse response = postsStub.findPostVisibility(protoPostId).get();
 
             return VisibilityMapper.map(response.getVisibility());
 

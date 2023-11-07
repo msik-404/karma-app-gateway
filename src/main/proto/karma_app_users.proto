@@ -8,89 +8,171 @@ option java_outer_classname = "KarmaAppUsersProtos";
 
 import "google/protobuf/empty.proto";
 import "buf/validate/validate.proto";
+import "mongo_object_id.proto";
 
+/**
+ * Service for finding, creating and updating users. It also returns data required for authorization.
+ */
 service Users {
 
+  /**
+   * Used for creating new user account. Returns encoded UnsupportedRoleException, DuplicateUsernameException,
+   * DuplicateEmailException, DuplicateUnexpectedFieldException on failure.
+   */
   rpc createUser(CreateUserRequest) returns (google.protobuf.Empty) {}
+
+  /**
+   * Used for updating already existing user account. Only set fields will get updated. Returns encoded
+   * UnsupportedRoleException, DuplicateUsernameException, DuplicateEmailException, DuplicateUnexpectedFieldException
+   * on failure.
+   */
   rpc updateUser(UpdateUserRequest) returns (google.protobuf.Empty) {}
 
+  /**
+   * Used for fetching credentials for authentication. Returns encoded UnsupportedRoleException, UserNotFoundException
+   * on failure.
+   */
   rpc findCredentials(CredentialsRequest) returns (CredentialsResponse) {}
-  rpc findUserRole(UserRoleRequest) returns (UserRoleResponse) {}
-  rpc findUsername(UsernameRequest) returns (UsernameResponse) {}
+
+  /** Used for fetching user's role of a given user by userId. Returns encoded UserNotFoundException on failure. */
+  rpc findUserRole(protomongo.ProtoObjectId) returns (UserRoleResponse) {}
+
+  /** Used for fetching user's username of a given user by userId. Returns encoded UserNotFoundException on failure. */
+  rpc findUsername(protomongo.ProtoObjectId) returns (UsernameResponse) {}
+
+  /** Used for fetching list of usernames by list of userIds. */
   rpc findUsernames(UsernamesRequest) returns (UsernamesResponse) {}
-  rpc findUserId(UserIdRequest) returns (MongoObjectId) {}
+
+  /** Used for fetching userId of a given user by username. Returns encoded UserNotFoundException on failure. */
+  rpc findUserId(UserIdRequest) returns (protomongo.ProtoObjectId) {}
 
 }
 
-message MongoObjectId {
-  optional string hexString = 1 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true];
-}
-
+/**
+ * Represents all accepted roles of a user.
+ */
 enum UserRole {
-  ROLE_USER = 0;
-  ROLE_MOD = 1;
-  ROLE_ADMIN = 2;
+  ROLE_USER = 0; /** user role. */
+  ROLE_MOD = 1; /** mod role. */
+  ROLE_ADMIN = 2; /** admin role */
 }
 
+/**
+ * Represents request for creating new user account.
+ */
 message CreateUserRequest {
+
+  /** Optional user's firstname. */
   optional string firstName = 1;
+
+  /** Optional user's lastName */
   optional string lastName = 2;
+
+  /** Required unique user's username */
   optional string username = 3 [(buf.validate.field).required = true];
+
+  /** Required unique user's email. Email must be in valid format. */
   optional string email = 4 [(buf.validate.field).string.email = true, (buf.validate.field).required = true];
+
+  /** Required user's password. Should already be hashed and salted, for example in Bcrypt. */
   optional string password = 5 [(buf.validate.field).required = true];
+
+  /** Required user's role. */
   optional UserRole role = 6 [(buf.validate.field).required = true];
+
 }
 
+/**
+ * Represents request for updating existing user account.
+ */
 message UpdateUserRequest {
-  optional MongoObjectId userId = 1 [(buf.validate.field).required = true];
+
+  /** Requested id of user account to be updated. */
+  optional protomongo.ProtoObjectId userId = 1 [(buf.validate.field).required = true];
+
+  /** Optional new firstName value. */
   optional string firstName = 2;
+
+  /** Optional new lastName value. */
   optional string lastName = 3;
+
+  /** Optional unique new username value. */
   optional string username = 4;
+
+  /** Optional unique new email value in valid format. */
   optional string email = 5 [(buf.validate.field).string.email = true];
+
+  /** Optional new password, which should already by hashed and salted, for example in Bcrypt. */
   optional string password = 6;
+
+  /** Optional new role. */
   optional UserRole role = 7;
+
 }
 
+/**
+ * Represents request for fetching data required for authentication.
+ */
 message CredentialsRequest {
+
+  /** Requested email which should be in valid format. */
   optional string email = 1 [(buf.validate.field).string.email = true, (buf.validate.field).required = true];
+
 }
 
+/**
+ * Represents credentials required to perform authentication of a user.
+ */
 message CredentialsResponse {
-  optional MongoObjectId userId = 1 [(buf.validate.field).required = true];
-  optional string password = 2 [(buf.validate.field).required = true];
-  optional UserRole role = 3 [(buf.validate.field).required = true];
+  optional protomongo.ProtoObjectId userId = 1 [(buf.validate.field).required = true]; /** Id of the user. */
+  optional string password = 2 [(buf.validate.field).required = true]; /** Hashed and salted password of the user. */
+  optional UserRole role = 3 [(buf.validate.field).required = true]; /** Role of the user. */
 }
 
-message UserRoleRequest {
-  optional MongoObjectId userId = 1 [(buf.validate.field).required = true];
-}
-
+/**
+ * Represents response with user's role.
+ */
 message UserRoleResponse {
-  optional UserRole role = 1 [(buf.validate.field).required = true];
+  optional UserRole role = 1 [(buf.validate.field).required = true]; /** Required role of the user. */
 }
 
-message UsernameRequest {
-  optional MongoObjectId userId = 1 [(buf.validate.field).required = true];
-}
-
+/**
+ * Represents response with user's username.
+ */
 message UsernameResponse {
-  optional string username = 1 [(buf.validate.field).required = true];
+  optional string username = 1 [(buf.validate.field).required = true]; /** Required username of the user. */
 }
 
-// Here I cannot use MongoObjectId, because unique constraint does not work for custom messages.
+/**
+ * Represents request for list of usernames.
+ */
 message UsernamesRequest {
+
+  /**
+   * List of userIds in string form. Each must be unique and have 24 chars. List should contain at least one userId.
+   */
   repeated string userIdHexStrings = 1 [
     (buf.validate.field).repeated.min_items = 1,
     (buf.validate.field).repeated.items.string.len = 24,
     (buf.validate.field).repeated.unique = true,
     (buf.validate.field).required = true
   ];
+
 }
 
+/**
+ * Represents response with usernames returned in the same order as ids in request.
+ */
 message UsernamesResponse {
+
+  /** List of usernames. If given username was not found, empty string is in it's place. */
   repeated string usernames = 1;
+
 }
 
+/**
+ * Represents request for user's id.
+ */
 message UserIdRequest {
-  optional string username = 1 [(buf.validate.field).required = true];
+  optional string username = 1 [(buf.validate.field).required = true]; /** Required username of the user. */
 }

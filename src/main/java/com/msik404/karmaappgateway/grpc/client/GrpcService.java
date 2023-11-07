@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.google.protobuf.ByteString;
+import com.msik404.grpc.mongo.id.ProtoObjectId;
 import com.msik404.karmaappgateway.auth.dto.RegisterRequest;
 import com.msik404.karmaappgateway.grpc.client.exception.UnsupportedRoleException;
 import com.msik404.karmaappgateway.grpc.client.exception.UnsupportedVisibilityException;
@@ -26,7 +27,6 @@ import com.msik404.karmaappposts.grpc.*;
 import com.msik404.karmaappusers.grpc.CreateUserRequest;
 import com.msik404.karmaappusers.grpc.CredentialsRequest;
 import com.msik404.karmaappusers.grpc.UserIdRequest;
-import com.msik404.karmaappusers.grpc.UserRoleRequest;
 import org.bson.types.ObjectId;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -133,7 +133,7 @@ public class GrpcService {
 
         var postsWithCreatorIdRequest = PostsWithCreatorIdRequest.newBuilder()
                 .setPostsRequest(postsRequest)
-                .setCreatorId(MongoObjectIdMapper.mapToPostsMongoObjectId(creatorId))
+                .setCreatorId(ProtoObjectId.newBuilder().setHexString(creatorId.toHexString()).build())
                 .build();
 
         return dispatcher.fetchPostsWithUsernames(postsWithCreatorIdRequest);
@@ -155,7 +155,7 @@ public class GrpcService {
 
         var postsWithCreatorIdRequest = PostsWithCreatorIdRequest.newBuilder()
                 .setPostsRequest(postsRequest)
-                .setCreatorId(MongoObjectIdMapper.mapToPostsMongoObjectId(creatorId))
+                .setCreatorId(ProtoObjectId.newBuilder().setHexString(creatorId.toHexString()).build())
                 .build();
 
         return dispatcher.fetchPostsWithUsernames(postsWithCreatorIdRequest);
@@ -166,11 +166,9 @@ public class GrpcService {
             @NonNull ObjectId postId
     ) throws PostNotFoundException, UserNotFoundException {
 
-        var postRequest = PostRequest.newBuilder()
-                .setPostId(MongoObjectIdMapper.mapToPostsMongoObjectId(postId))
-                .build();
+        var protoPostId = ProtoObjectId.newBuilder().setHexString(postId.toHexString()).build();
 
-        return dispatcher.fetchPostWithImage(postRequest);
+        return dispatcher.fetchPostWithImage(protoPostId);
     }
 
     @NonNull
@@ -186,7 +184,7 @@ public class GrpcService {
 
         var ratingsRequest = PostRatingsRequest.newBuilder()
                 .setPostsRequest(postRequest)
-                .setClientId(MongoObjectIdMapper.mapToPostsMongoObjectId(clientId))
+                .setClientId(ProtoObjectId.newBuilder().setHexString(clientId.toHexString()).build())
                 .build();
 
         return dispatcher.fetchRatings(ratingsRequest);
@@ -207,7 +205,7 @@ public class GrpcService {
 
         var ratingsRequest = PostRatingsRequest.newBuilder()
                 .setPostsRequest(postRequest)
-                .setClientId(MongoObjectIdMapper.mapToPostsMongoObjectId(clientId))
+                .setClientId(ProtoObjectId.newBuilder().setHexString(clientId.toHexString()).build())
                 .build();
 
         return dispatcher.fetchRatings(ratingsRequest);
@@ -228,7 +226,7 @@ public class GrpcService {
 
         var ratingsRequest = PostRatingsRequest.newBuilder()
                 .setPostsRequest(postRequest)
-                .setClientId(MongoObjectIdMapper.mapToPostsMongoObjectId(clientId))
+                .setClientId(ProtoObjectId.newBuilder().setHexString(clientId.toHexString()).build())
                 .build();
 
         var creatorIdRequest = UserIdRequest.newBuilder().setUsername(creatorUsername).build();
@@ -253,7 +251,7 @@ public class GrpcService {
 
         var ratingsRequest = PostRatingsRequest.newBuilder()
                 .setPostsRequest(postRequest)
-                .setClientId(MongoObjectIdMapper.mapToPostsMongoObjectId(clientId))
+                .setClientId(ProtoObjectId.newBuilder().setHexString(clientId.toHexString()).build())
                 .build();
 
         var creatorIdRequest = UserIdRequest.newBuilder().setUsername(creatorUsername).build();
@@ -266,11 +264,9 @@ public class GrpcService {
             @NonNull ObjectId postId
     ) throws ImageNotFoundException {
 
-        var request = ImageRequest.newBuilder()
-                .setPostId(MongoObjectIdMapper.mapToPostsMongoObjectId(postId))
-                .build();
+        var protoPostId = ProtoObjectId.newBuilder().setHexString(postId.toHexString()).build();
 
-        return dispatcher.fetchImage(request);
+        return dispatcher.fetchImage(protoPostId);
     }
 
     public void createPost(
@@ -280,7 +276,7 @@ public class GrpcService {
     ) throws FileProcessingException {
 
         var requestBuilder = CreatePostRequest.newBuilder()
-                .setUserId(MongoObjectId.newBuilder().setHexString(clientId.toHexString()).build())
+                .setUserId(ProtoObjectId.newBuilder().setHexString(clientId.toHexString()).build())
                 .setHeadline(creationRequest.headline())
                 .setText(creationRequest.text());
 
@@ -298,8 +294,8 @@ public class GrpcService {
     ) throws PostNotFoundException, RatingNotFoundException {
 
         var request = RatePostRequest.newBuilder()
-                .setPostId(MongoObjectIdMapper.mapToPostsMongoObjectId(postId))
-                .setUserId(MongoObjectIdMapper.mapToPostsMongoObjectId(clientId))
+                .setPostId(ProtoObjectId.newBuilder().setHexString(postId.toHexString()).build())
+                .setUserId(ProtoObjectId.newBuilder().setHexString(clientId.toHexString()).build())
                 .setIsPositive(isPositive)
                 .build();
 
@@ -312,8 +308,8 @@ public class GrpcService {
     ) throws PostNotFoundException {
 
         var request = UnratePostRequest.newBuilder()
-                .setPostId(MongoObjectIdMapper.mapToPostsMongoObjectId(postId))
-                .setUserId(MongoObjectIdMapper.mapToPostsMongoObjectId(clientId))
+                .setPostId(ProtoObjectId.newBuilder().setHexString(postId.toHexString()).build())
+                .setUserId(ProtoObjectId.newBuilder().setHexString(clientId.toHexString()).build())
                 .build();
 
         return dispatcher.unratePost(request);
@@ -325,7 +321,7 @@ public class GrpcService {
     ) throws PostNotFoundException {
 
         var request = ChangePostVisibilityRequest.newBuilder()
-                .setPostId(MongoObjectIdMapper.mapToPostsMongoObjectId(postId))
+                .setPostId(ProtoObjectId.newBuilder().setHexString(postId.toHexString()).build())
                 .setVisibility(VisibilityMapper.map(visibility))
                 .build();
 
@@ -333,15 +329,13 @@ public class GrpcService {
     }
 
     @NonNull
-    public String findPostCreatorId(
+    public ObjectId findPostCreatorId(
             @NonNull ObjectId postId
     ) throws PostNotFoundException {
 
-        var request = PostCreatorIdRequest.newBuilder()
-                .setPostId(MongoObjectIdMapper.mapToPostsMongoObjectId(postId))
-                .build();
+        var protoPostId = ProtoObjectId.newBuilder().setHexString(postId.toHexString()).build();
 
-        return dispatcher.fetchPostCreatorId(request);
+        return dispatcher.fetchPostCreatorId(protoPostId);
     }
 
     @NonNull
@@ -349,11 +343,9 @@ public class GrpcService {
             @NonNull ObjectId userId
     ) throws UserNotFoundException {
 
-        var request = UserRoleRequest.newBuilder()
-                .setUserId(MongoObjectIdMapper.mapToUsersMongoObjectId(userId))
-                .build();
+        var protoUserId = ProtoObjectId.newBuilder().setHexString(userId.toHexString()).build();
 
-        return dispatcher.fetchUserRole(request);
+        return dispatcher.fetchUserRole(protoUserId);
     }
 
     @NonNull
@@ -416,7 +408,7 @@ public class GrpcService {
             @NonNull ObjectId postId
     ) throws UnsupportedVisibilityException, PostNotFoundException {
 
-        return dispatcher.fetchPostVisibility(MongoObjectIdMapper.mapToPostsMongoObjectId(postId));
+        return dispatcher.fetchPostVisibility(ProtoObjectId.newBuilder().setHexString(postId.toHexString()).build());
     }
 
 }

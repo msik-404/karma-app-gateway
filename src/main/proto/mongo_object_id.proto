@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package protomongo;
+
+option java_multiple_files = true;
+option java_package = "com.msik404.grpc.mongo.id";
+option java_outer_classname = "ProtoMongoObjectId";
+
+import "buf/validate/validate.proto";
+
+/**
+ * Represents a unique document identifier in MongoDB.
+ */
+message ProtoObjectId {
+  optional string hexString = 1 [(buf.validate.field).string.len = 24, (buf.validate.field).required = true]; /** Required, unique string of exactly 24 characters. */
+}
