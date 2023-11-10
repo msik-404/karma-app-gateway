@@ -10,7 +10,7 @@ import org.springframework.lang.NonNull;
 public class ImageNotFoundException extends RestFromGrpcException {
 
     public final static String Id = "ImageNotFound";
-    private final static String ERROR_MESSAGE = "Requested image was not found";
+    public final static String ERROR_MESSAGE = "Requested image was not found";
 
     public ImageNotFoundException() {
         super(ERROR_MESSAGE);

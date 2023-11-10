@@ -8,7 +8,10 @@ import com.msik404.grpc.mongo.id.ProtoObjectId;
 import com.msik404.karmaappgateway.auth.dto.RegisterRequest;
 import com.msik404.karmaappgateway.grpc.client.exception.UnsupportedRoleException;
 import com.msik404.karmaappgateway.grpc.client.exception.UnsupportedVisibilityException;
-import com.msik404.karmaappgateway.grpc.client.mapper.*;
+import com.msik404.karmaappgateway.grpc.client.mapper.RoleMapper;
+import com.msik404.karmaappgateway.grpc.client.mapper.ScrollPositionMapper;
+import com.msik404.karmaappgateway.grpc.client.mapper.UserUpdateMapper;
+import com.msik404.karmaappgateway.grpc.client.mapper.VisibilityMapper;
 import com.msik404.karmaappgateway.post.dto.ScrollPosition;
 import com.msik404.karmaappgateway.post.dto.*;
 import com.msik404.karmaappgateway.post.exception.FileProcessingException;
@@ -383,7 +386,8 @@ public class GrpcService {
     public void updateUserWithUserPrivilege(
             @NonNull ObjectId userId,
             @NonNull UserUpdateRequestWithUserPrivilege updateRequest
-    ) throws DuplicateUsernameException, DuplicateEmailException, DuplicateUnexpectedFieldException {
+    ) throws UserNotFoundException, DuplicateUsernameException, DuplicateEmailException,
+            DuplicateUnexpectedFieldException {
 
         var optionalRequest = userUpdateMapper.map(userId, updateRequest);
 
@@ -394,7 +398,7 @@ public class GrpcService {
     public void updateUserWithAdminPrivilege(
             @NonNull ObjectId userId,
             @NonNull UserUpdateRequestWithAdminPrivilege updateRequest
-    ) throws UnsupportedRoleException, DuplicateUsernameException, DuplicateEmailException,
+    ) throws UserNotFoundException, UnsupportedRoleException, DuplicateUsernameException, DuplicateEmailException,
             DuplicateUnexpectedFieldException {
 
         var optionalRequest = userUpdateMapper.map(userId, updateRequest);

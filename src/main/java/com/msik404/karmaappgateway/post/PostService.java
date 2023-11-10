@@ -23,6 +23,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -153,7 +154,7 @@ public class PostService {
     public void rate(
             @NonNull ObjectId postId,
             boolean isNewRatingPositive
-    ) throws PostNotFoundException, RatingNotFoundException {
+    ) throws PostNotFoundException, RatingNotFoundException, UserNotFoundException {
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var clientId = (ObjectId) authentication.getPrincipal();
@@ -172,7 +173,7 @@ public class PostService {
 
     public void unrate(
             @NonNull ObjectId postId
-    ) throws PostNotFoundException {
+    ) throws PostNotFoundException, UsernameNotFoundException {
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var clientId = (ObjectId) authentication.getPrincipal();
@@ -219,6 +220,9 @@ public class PostService {
         }
     }
 
+    // TODO: This method could be simplified so that UserNotFoundException could not be potentially thrown while deleting
+    //  and hiding posts. This is because in these two cases fetch for username is redundant and it is the thing which
+    //  can potentially throw this exception.
     public void changeOwnedPostVisibility(
             @NonNull ObjectId postId,
             @NonNull Visibility visibility

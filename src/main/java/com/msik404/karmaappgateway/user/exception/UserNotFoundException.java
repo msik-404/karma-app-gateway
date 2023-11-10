@@ -10,7 +10,7 @@ import org.springframework.lang.NonNull;
 public class UserNotFoundException extends RestFromGrpcException {
 
     public static final String Id = "UserNotFound";
-    private static final String ERROR_MESSAGE = "User was not found.";
+    public static final String ERROR_MESSAGE = "User was not found.";
 
     public UserNotFoundException() {
         super(ERROR_MESSAGE);

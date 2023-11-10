@@ -6,6 +6,7 @@ import com.msik404.karmaappgateway.user.dto.UserUpdateRequestWithUserPrivilege;
 import com.msik404.karmaappgateway.user.exception.DuplicateEmailException;
 import com.msik404.karmaappgateway.user.exception.DuplicateUnexpectedFieldException;
 import com.msik404.karmaappgateway.user.exception.DuplicateUsernameException;
+import com.msik404.karmaappgateway.user.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.lang.NonNull;
@@ -20,7 +21,7 @@ public class UserService {
 
     public void updateWithUserPrivilege(
             @NonNull UserUpdateRequestWithUserPrivilege request
-    ) throws DuplicateUsernameException, DuplicateEmailException, DuplicateUnexpectedFieldException {
+    ) throws UserNotFoundException, DuplicateUsernameException, DuplicateEmailException, DuplicateUnexpectedFieldException {
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var clientId = (ObjectId) authentication.getPrincipal();
@@ -31,7 +32,7 @@ public class UserService {
     public void updateWithAdminPrivilege(
             @NonNull ObjectId userId,
             @NonNull UserUpdateRequestWithAdminPrivilege request
-    ) throws DuplicateUsernameException, DuplicateEmailException, DuplicateUnexpectedFieldException {
+    ) throws UserNotFoundException, DuplicateUsernameException, DuplicateEmailException, DuplicateUnexpectedFieldException {
 
         grpcService.updateUserWithAdminPrivilege(userId, request);
     }

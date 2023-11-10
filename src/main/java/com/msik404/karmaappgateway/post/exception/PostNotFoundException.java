@@ -10,7 +10,7 @@ import org.springframework.lang.NonNull;
 public class PostNotFoundException extends RestFromGrpcException {
 
     public static final String Id = "PostNotFound";
-    private static final String ERROR_MESSAGE = "Post with provided id was not found.";
+    public static final String ERROR_MESSAGE = "Post with provided id was not found.";
 
     public PostNotFoundException() {
         super(ERROR_MESSAGE);

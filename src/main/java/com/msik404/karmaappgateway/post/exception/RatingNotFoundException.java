@@ -10,7 +10,7 @@ import org.springframework.lang.NonNull;
 public class RatingNotFoundException extends RestFromGrpcException {
 
     public static final String Id = "RatingNotFound";
-    private static final String ERROR_MESSAGE = "Rating with provided post_id and user_id was not found.";
+    public static final String ERROR_MESSAGE = "Rating with provided post_id and user_id was not found.";
 
     public RatingNotFoundException() {
         super(ERROR_MESSAGE);

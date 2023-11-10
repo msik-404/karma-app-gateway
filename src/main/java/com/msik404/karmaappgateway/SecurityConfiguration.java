@@ -52,7 +52,15 @@ public class SecurityConfiguration {
                         .requestMatchers("/admin/**").hasAuthority(Role.ADMIN.name())
                         .requestMatchers("/mod/**").hasAnyAuthority(Role.ADMIN.name(), Role.MOD.name())
                         .requestMatchers("/user/**").hasAnyAuthority(Role.ADMIN.name(), Role.MOD.name(), Role.USER.name())
-                        .requestMatchers("/register", "/login", "/static/**", "guest/**").permitAll()
+                        .requestMatchers(
+                                "/register",
+                                "/login",
+                                "/static/**",
+                                "guest/**",
+                                "v3/api-docs/**",
+                                "v3/api-docs.yaml/**",
+                                "swagger-ui/**"
+                        ).permitAll()
                         .anyRequest().authenticated())
 
                 .authenticationProvider(authenticationProvider)

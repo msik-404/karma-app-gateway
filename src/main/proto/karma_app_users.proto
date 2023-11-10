@@ -23,8 +23,8 @@ service Users {
 
   /**
    * Used for updating already existing user account. Only set fields will get updated. Returns encoded
-   * UnsupportedRoleException, DuplicateUsernameException, DuplicateEmailException, DuplicateUnexpectedFieldException
-   * on failure.
+   * UserNotFoundException, UnsupportedRoleException, DuplicateUsernameException, DuplicateEmailException,
+   * DuplicateUnexpectedFieldException on failure.
    */
   rpc updateUser(UpdateUserRequest) returns (google.protobuf.Empty) {}
 

@@ -10,7 +10,7 @@ import org.springframework.lang.NonNull;
 public class FileProcessingException extends RestFromGrpcException {
 
     public final static String Id = "FileProcessing";
-    private final static String ERROR_MESSAGE = "File could not be processed for some reason";
+    public final static String ERROR_MESSAGE = "File could not be processed for some reason";
 
     public FileProcessingException() {
         super(ERROR_MESSAGE);

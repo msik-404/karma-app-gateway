@@ -394,8 +394,8 @@ public class GrpcDispatcherService {
 
     public void updateUser(
             @NonNull UpdateUserRequest request
-    ) throws InternalServerErrorException, BadEncodingException, UnsupportedRoleException, DuplicateUsernameException,
-            DuplicateEmailException, DuplicateUnexpectedFieldException {
+    ) throws UserNotFoundException, InternalServerErrorException, BadEncodingException, UnsupportedRoleException,
+            DuplicateUsernameException, DuplicateEmailException, DuplicateUnexpectedFieldException {
 
         try {
             usersStub.updateUser(request).get();
